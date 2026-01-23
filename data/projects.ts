@@ -50,6 +50,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS", "S3", "Lambda", "SageMaker", "CloudWatch", "CI/CD"],
     featured: true,
+    image: "/images/projects/Basin_Data_Lake.png",
   },
   {
     id: "2",
@@ -71,6 +72,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS Cost Explorer", "S3 Storage Classes", "EC2 Optimization", "Financial Modeling"],
     featured: true,
+    image: "/images/projects/Basin_Data_Lake.png",
   },
   {
     id: "3",
@@ -92,6 +94,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS Metering", "Metering Lite", "Cost Allocation", "Microservices"],
     featured: true,
+    image: "/images/projects/AWS_Metering.png",
   },
   {
     id: "4",
@@ -113,6 +116,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS S3", "S3 Glacier Instant Retrieval", "Storage Optimization"],
     featured: false,
+    image: "/images/projects/S3_Glacier_Migration.png",
   },
   {
     id: "5",
@@ -134,6 +138,7 @@ export const projects: Project[] = [
     ],
     technologies: ["Microservices", "CI/CD", "APIs", "Cloud Architecture", "B2B SaaS"],
     featured: true,
+    image: "/images/projects/NuORDER_Platform.png",
   },
   {
     id: "6",
