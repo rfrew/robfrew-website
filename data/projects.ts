@@ -19,6 +19,7 @@ export interface Project {
   impact: string[];
   technologies: string[];
   featured: boolean;
+  image?: string; // Path to project image in /public/images/projects/
 }
 
 export const projects: Project[] = [
