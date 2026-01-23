@@ -19,7 +19,7 @@ const resumeVersions = [
     title: "General TPM Resume",
     description:
       "Comprehensive 2-page resume highlighting technical program management experience across Amazon, NuORDER, Kibo Commerce, and earlier roles.",
-    filename: "rob-frew-resume-tpm.pdf",
+    filename: "Rob_Frew_Resume_TPM.pdf",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -31,7 +31,7 @@ const resumeVersions = [
     title: "Release Management Focus",
     description:
       "Emphasizes CI/CD pipelines, release operations, quality frameworks, and deployment confidence—ideal for release management and DevOps-focused TPM roles.",
-    filename: "rob-frew-resume-release-mgmt.pdf",
+    filename: "Rob_Frew_Resume_Release_Management.pdf",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -43,7 +43,7 @@ const resumeVersions = [
     title: "Product Management Focus",
     description:
       "Highlights product strategy, roadmaps, go-to-market execution, and ARR growth—tailored for Principal Product Manager or Sr. PM roles.",
-    filename: "rob-frew-resume-product.pdf",
+    filename: "Rob_Frew_Resume_Product_Manager.pdf",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -55,7 +55,7 @@ const resumeVersions = [
     title: "Solutions Architecture Focus",
     description:
       "Emphasizes customer-facing technical consulting, requirements gathering, and custom integration design—ideal for Solutions Architect or Pre-Sales Engineering roles.",
-    filename: "rob-frew-resume-solutions.pdf",
+    filename: "Rob_Frew_Resume_Solutions_Architecture.pdf",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -305,7 +305,7 @@ export default function ResumePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="/resumes/rob-frew-resume-tpm.pdf"
+              href="/resumes/Rob_Frew_Resume_TPM.pdf"
               download
               className="bg-black text-white px-8 py-4 text-lg font-semibold hover:bg-gray-900 transition-colors duration-200 inline-flex items-center justify-center gap-2"
             >

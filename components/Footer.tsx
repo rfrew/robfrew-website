@@ -57,14 +57,6 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="tel:309-751-7423"
-                  className="hover:text-white transition-colors duration-200"
-                >
-                  309-751-7423
-                </a>
-              </li>
-              <li>
-                <a
                   href="https://linkedin.com/in/frewrob"
                   target="_blank"
                   rel="noopener noreferrer"
