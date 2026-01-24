@@ -97,7 +97,8 @@ export const testimonials = [
     id: "1",
     quote:
       "I appreciate that you are self-motivated — you see problems and you act. I found myself saying on more than one occasion: 'Rob can you look at X problem', only to find you've already got the ball rolling. What stands out for me is that you exhibit curiosity and dive deep into projects and technologies and grow in understanding.",
-    author: "Manager",
+    author: "Josh Nibecker",
+    title: "Sr. Manager, Amazon Security",
     company: "Amazon",
     context: "Forte 2025 Review",
   },
