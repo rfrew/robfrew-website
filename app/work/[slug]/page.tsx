@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { projects } from "@/data/projects";
 import { Metadata } from "next";
 
@@ -80,6 +81,24 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </div>
         </div>
       </section>
+
+      {/* Project Image */}
+      {project.image && (
+        <section className="py-8">
+          <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
+            <div className="flex justify-center border border-gray-200 bg-gray-50 p-4">
+              <Image
+                src={project.image}
+                alt={project.title}
+                width={1200}
+                height={800}
+                className="max-w-full h-auto"
+                priority
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Impact Metrics */}
       <section className="py-12 bg-gray-50 border-y border-gray-200">
