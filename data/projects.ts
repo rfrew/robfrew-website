@@ -72,7 +72,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS Cost Explorer", "S3 Storage Classes", "EC2 Optimization", "Financial Modeling"],
     featured: true,
-    image: "/images/projects/Basin_Data_Lake.png",
+    image: "/images/projects/2026_Basin_Fleet_Financial_Review.png",
   },
   {
     id: "3",
@@ -160,6 +160,7 @@ export const projects: Project[] = [
     ],
     technologies: ["Payment Processing", "Risk Management", "Real-Time Analytics", "Rules Engines"],
     featured: false,
+    image: "/images/projects/Kibo_Fraud_Detection.png",
   },
   {
     id: "7",
@@ -181,6 +182,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS Multi-Region", "Infrastructure as Code", "Automation"],
     featured: false,
+    image: "/images/projects/Basin_Regional_Expansion.png",
   },
   {
     id: "8",
