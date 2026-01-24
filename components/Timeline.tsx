@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Experience } from "@/data/experience";
 
 interface TimelineProps {
@@ -46,7 +47,19 @@ export default function Timeline({ experiences }: TimelineProps) {
                   {exp.startDate} — {exp.endDate}
                 </div>
 
-                <h3 className="text-xl font-bold mb-1">{exp.company}</h3>
+                <div className="flex items-center gap-3 mb-1">
+                  {exp.logo && (
+                    <div className="relative w-10 h-10 flex-shrink-0">
+                      <Image
+                        src={exp.logo}
+                        alt={`${exp.company} logo`}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  )}
+                  <h3 className="text-xl font-bold">{exp.company}</h3>
+                </div>
                 <p className="text-gray-600 mb-2">{exp.role}</p>
                 <p className="text-sm text-gray-500">{exp.location}</p>
 

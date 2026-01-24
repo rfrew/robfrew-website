@@ -1,6 +1,7 @@
 export interface Experience {
   id: string;
   company: string;
+  logo?: string;
   role: string;
   location: string;
   startDate: string;
@@ -21,6 +22,7 @@ export const experiences: Experience[] = [
   {
     id: "1",
     company: "Amazon Web Services",
+    logo: "/images/logos/aws.svg",
     role: "Technical Program Manager III",
     location: "Remote",
     startDate: "June 2022",
@@ -36,6 +38,7 @@ export const experiences: Experience[] = [
   {
     id: "2",
     company: "NuORDER",
+    logo: "/images/logos/nuorder.svg",
     role: "Principal Product Manager",
     location: "Remote",
     startDate: "2021",
@@ -51,6 +54,7 @@ export const experiences: Experience[] = [
   {
     id: "3",
     company: "Kibo Commerce",
+    logo: "/images/logos/kibo.svg",
     role: "Multiple Roles (Product Manager → TPM → Principal PM)",
     location: "Dallas, TX",
     startDate: "2011",
@@ -66,6 +70,7 @@ export const experiences: Experience[] = [
   {
     id: "4",
     company: "John Deere",
+    logo: "/images/logos/john-deere.svg",
     role: "Manufacturing Operations",
     location: "Moline, IL",
     startDate: "2010",
@@ -80,6 +85,7 @@ export const experiences: Experience[] = [
   {
     id: "5",
     company: "Performance Food Group",
+    logo: "/images/logos/pfg.svg",
     role: "Inventory Management",
     location: "Illinois",
     startDate: "2004",
