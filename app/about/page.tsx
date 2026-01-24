@@ -126,25 +126,24 @@ export default function AboutPage() {
             What Others Say
           </h2>
 
-          <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {testimonials.map((testimonial) => (
               <blockquote
                 key={testimonial.id}
-                className="border-l-4 border-black pl-8 py-4"
+                className="border-l-4 border-black pl-6 py-4 flex flex-col"
               >
-                <p className="text-xl text-gray-700 leading-relaxed mb-4 italic">
+                <p className="text-gray-700 leading-relaxed mb-4 italic flex-grow">
                   &quot;{testimonial.quote}&quot;
                 </p>
-                <footer className="text-gray-600">
+                <footer className="text-gray-600 text-sm">
                   <span className="font-semibold">{testimonial.author}</span>
-                  <span className="mx-2">—</span>
-                  <span>{testimonial.company}</span>
-                  {testimonial.context && (
-                    <span className="text-gray-500">
-                      {" "}
-                      ({testimonial.context})
-                    </span>
+                  {testimonial.title && (
+                    <span className="block text-gray-500">{testimonial.title}</span>
                   )}
+                  <span className="text-gray-500">
+                    {testimonial.company}
+                    {testimonial.context && ` · ${testimonial.context}`}
+                  </span>
                 </footer>
               </blockquote>
             ))}

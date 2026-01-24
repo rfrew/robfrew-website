@@ -8,6 +8,15 @@ export interface Experience {
   highlights: string[];
 }
 
+export interface Testimonial {
+  id: string;
+  quote: string;
+  author: string;
+  title?: string;
+  company: string;
+  context: string;
+}
+
 export const experiences: Experience[] = [
   {
     id: "1",
@@ -91,6 +100,96 @@ export const testimonials = [
     author: "Manager",
     company: "Amazon",
     context: "Forte 2025 Review",
+  },
+  {
+    id: "2",
+    quote:
+      "Throughout the project, I witnessed first-hand Rob's technical experience and deep understanding of cloud technology and the development of large-scale data platforms operating at petabyte scale. Combined with his excellent communication skills, he effectively kept both technical and non-technical stakeholders aligned, informed, and moving in the same direction throughout a complex, cross-team initiative. Under his leadership, new infrastructure deployment effort was reduced from 3–4 weeks to 2–3 days—an ~86% reduction in infrastructure deployment time.",
+    author: "Atul Shaurya",
+    title: "Senior Software Engineer",
+    company: "Amazon",
+    context: "January 2026",
+  },
+  {
+    id: "3",
+    quote:
+      "Rob's tenacity and persistence make him a highly effective team member. His product and industry knowledge allow him to communicate requirements from clients to engineers effectively, which is an invaluable skill. Our small team of engineers depended on Rob to relay issues to stakeholders and make us aware of client needs. In this way, he was indispensable to us, and many projects likely would not have got off the ground without his input.",
+    author: "Daniel Thorogood",
+    title: "Lead Developer",
+    company: "Kibo Commerce",
+    context: "January 2017",
+  },
+  {
+    id: "4",
+    quote:
+      "Rob is a smart and extremely hard working Product Manager that I have had the pleasure to work with for the past 5 years. Over that time, our company has grown and grown and his technical expertise and commitment to excellence has contributed to the success of our company. I would recommend him to any company that wants a Product Manager that can take a project from an idea to fruition.",
+    author: "Vincent Sordo",
+    title: "AI Agency Owner & Engineering Leader",
+    company: "Kibo Commerce",
+    context: "January 2017",
+  },
+  {
+    id: "5",
+    quote:
+      "Rob is a talented Product Manager with a strong commitment to defining clear requirements that are customer centered. He is great at engaging cross functional teams to ensure smooth development and implementation. Through it all, he has a positive attitude and brings a friendly sense of humor to the team as well.",
+    author: "Jamie Laughlin",
+    title: "Head of Global Digital Success",
+    company: "Shopatron (Kibo Commerce)",
+    context: "November 2019",
+  },
+  {
+    id: "6",
+    quote:
+      "Rob is very detail oriented with any project he worked on. He was always able to keep all areas of the company in mind when making recommendations and decisions. Rob was never afraid of pitching in to help others to advance the overall team.",
+    author: "Ted Thoms",
+    title: "Senior Leader",
+    company: "Kibo Commerce",
+    context: "April 2009",
+  },
+  {
+    id: "7",
+    quote:
+      "Rob is an extremely dedicated person who gives everything he has no matter what the task at hand. He will not accept anything less than the best from himself, and pushes others to strive for the same personal success. This, coupled with his proficiency to problem solve and plan ahead, is what makes him an outstanding manager, an invaluable team player and a genuinely admirable leader.",
+    author: "Mallory Jenkins",
+    title: "Marketing & Communications Leader",
+    company: "Colleague",
+    context: "April 2009",
+  },
+  {
+    id: "8",
+    quote:
+      "Rob was an excellent partner in the management of store operations and employee development. Rob has a drive not commonly found and a resourcefulness that is difficult to faze. Rob's skills and abilities would make him an asset to any team.",
+    author: "Robert F. Boyer",
+    title: "Regional Manager",
+    company: "Best Buy",
+    context: "Direct Manager",
+  },
+  {
+    id: "9",
+    quote:
+      "The word dedication certainly applies to Rob. I had the opportunity to watch Rob at his best and the results were above and beyond others in the same position. He has progressed through his career by learning each and every position he has held quickly and efficiently.",
+    author: "Dave Burnham",
+    title: "Electronic Repair Supervisor",
+    company: "Best Buy",
+    context: "April 2009",
+  },
+  {
+    id: "10",
+    quote:
+      "Rob Frew is one of the smartest people I have ever had the pleasure to work with. He is a fast thinker who is able to find the solution to almost any predicament he finds. He works far beyond status quo. Any company would benefit from his vast book of knowledge.",
+    author: "Jan Shirley",
+    title: "Experienced Buyer",
+    company: "Colleague",
+    context: "May 2011",
+  },
+  {
+    id: "11",
+    quote:
+      "I have known Rob for many years. Rob is a hard working goal oriented person who seems to bring out the best in people. Rob has a strong work ethic and is an extremely quick learner. Rob knows so much about so many different things, he is truly a jack of all trades.",
+    author: "Alan DeBaene",
+    title: "Senior Cybersecurity Engineer",
+    company: "UW Health",
+    context: "April 2009",
   },
 ];
 
