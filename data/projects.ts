@@ -203,6 +203,7 @@ export const projects: Project[] = [
     ],
     technologies: ["Process Optimization", "Project Management", "Enterprise SaaS"],
     featured: false,
+    image: "/images/projects/Kibo_Implementation.png",
   },
   {
     id: "9",
@@ -223,6 +224,7 @@ export const projects: Project[] = [
     ],
     technologies: ["Six Sigma", "Lean Manufacturing", "Process Optimization"],
     featured: false,
+    image: "/images/projects/John_Deere_Manufacturing.png",
   },
   {
     id: "10",
@@ -244,6 +246,7 @@ export const projects: Project[] = [
     ],
     technologies: ["Mobile Development", "Real-Time APIs", "Inventory Systems"],
     featured: false,
+    image: "/images/projects/Local_Inventory_Patent.png",
   },
 ];
 
