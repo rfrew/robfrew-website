@@ -32,6 +32,8 @@ export const experiences: Experience[] = [
       "Delivered $24.9M in annual cost savings",
       "Scaled platform 965% YoY",
       "Coordinated 40+ microservices across organizations",
+      "Enabled EPP team's insider threat detection and IP protection through Basin data integration",
+      "Served as interim Engineering Manager for 3 months, leading a development team during manager's medical leave",
       "Consistent 'Exceeds High Bar' performance ratings",
     ],
   },
