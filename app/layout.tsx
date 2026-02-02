@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StructuredData from "@/components/StructuredData";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -89,6 +90,7 @@ export default function RootLayout({
         <Header />
         <main className="pt-20">{children}</main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
