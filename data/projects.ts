@@ -188,6 +188,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS", "Basin", "Security Analytics", "Threat Detection", "Data Pipelines"],
     featured: true,
+    image: "/images/projects/epp.png",
   },
   {
     id: "8",
