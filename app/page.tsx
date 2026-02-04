@@ -3,12 +3,10 @@ import Image from "next/image";
 import { projects } from "@/data/projects";
 import { testimonials } from "@/data/experience";
 import ProjectCard from "@/components/ProjectCard";
+import TestimonialCarousel from "@/components/TestimonialCarousel";
 
 export default function Home() {
   const featuredProjects = projects.filter((p) => p.featured).slice(0, 3);
-  const selectedTestimonials = testimonials.filter(
-    (t) => t.id === "1" || t.id === "2"
-  );
 
   const companyLogos = [
     { src: "/images/logos/aws.svg", alt: "Amazon Web Services" },
@@ -128,41 +126,17 @@ export default function Home() {
 
       {/* Testimonials */}
       <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-4xl">
           <h2 className="text-3xl md:text-4xl font-bold mb-12">
             What Others Say
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {selectedTestimonials.map((testimonial) => (
-              <blockquote
-                key={testimonial.id}
-                className="border-l-4 border-black pl-6 py-4 flex flex-col"
-              >
-                <p className="text-gray-700 leading-relaxed mb-4 italic flex-grow">
-                  &quot;{testimonial.quote}&quot;
-                </p>
-                <footer className="text-sm">
-                  <span className="font-semibold text-black">
-                    {testimonial.author}
-                  </span>
-                  {testimonial.title && (
-                    <span className="block text-gray-500">
-                      {testimonial.title}, {testimonial.company}
-                    </span>
-                  )}
-                  <span className="block text-gray-400">
-                    {testimonial.context}
-                  </span>
-                </footer>
-              </blockquote>
-            ))}
-          </div>
-          <div className="mt-12 text-center">
+          <TestimonialCarousel testimonials={testimonials} typingSpeed={20} pauseAfterTyping={5000} />
+          <div className="mt-8 text-center">
             <Link
               href="/about#testimonials"
               className="text-black font-semibold hover:underline inline-flex items-center gap-1 text-lg"
             >
-              More Testimonials
+              View All Testimonials
               <span aria-hidden="true">&rarr;</span>
             </Link>
           </div>
