@@ -169,24 +169,25 @@ export const projects: Project[] = [
     company: "Amazon",
     category: "Platform Engineering",
     shortDescription:
-      "Enabled Amazon's Endpoint Protection Platform (EPP) team to leverage Basin for insider threat detection, IP protection investigations, and automated threat response.",
+      "Served as single point of contact for all EPP-Basin integrations, managing 9PB+ daily endpoint data from 5M monitored endpoints to enable insider threat detection and IP protection.",
     challenge:
-      "Amazon's Endpoint Protection Platform (EPP) team needed access to comprehensive security data to power their insider threat detection and intellectual property protection programs. Their investigations and automated threat detection systems required reliable, high-fidelity data pipelines that could surface anomalous behavior patterns across Amazon's vast infrastructure.",
+      "Amazon's Endpoint Protection Platform (EPP) team monitored 5 million corporate endpoints for security threats, insider risk, and IP protection. However, their endpoint data—file hash data, endpoint telemetry, security events—needed to flow into Basin for correlation with other security data sources and into AIP for alias-based investigations. EPP and Basin were separate organizations with different priorities, and real-time vs. batch detection latency was a critical challenge affecting threat detection speed.",
     approach:
-      "Worked directly with the EPP team to understand their data requirements for insider threat investigations and automated detection workflows. Designed and delivered the data integration pipelines within Basin that provided EPP the security telemetry they needed, ensuring data quality, timeliness, and completeness for both real-time automated threat detection and retrospective investigations.",
+      "Established myself as the sole point of contact for ALL EPP-Basin integrations from the start of the Basin program, working with approximately 50 EPP team members throughout the program lifecycle. Addressed the real-time vs. batch detection challenge by gathering latency data across the entire pipeline—from file creation timestamp through event timestamp, Basin delivery time, and parquet conversion time—then analyzed use cases to determine whether streaming or batch processing was optimal for each detection type. Frequently scanned EPP data in Basin and recommended relevant datasets for AIP integration, creating a feedback loop where security engineers could request new datasets for the investigation platform. Guided security engineers on building new detections from endpoint data, including tying employee aliases to file hashes to detect sensitive IP exfiltration.",
     keyDeliverables: [
-      "Delivered Basin data pipelines tailored to EPP's insider threat detection requirements",
-      "Enabled automated threat detection workflows with reliable, high-fidelity security data",
-      "Supported IP protection investigations with comprehensive data access and query capabilities",
+      "Managed all EPP-Basin integrations as single point of contact across ~50 team members",
+      "Optimized detection latency by right-sizing streaming vs. batch processing for each use case",
+      "Enabled file hash-to-alias tracking for IP theft detection (Ring Camera IP, company financials)",
+      "Created detection framework and feedback loop for security engineers to request new datasets",
       "Established data quality frameworks ensuring accuracy for security-critical investigations",
     ],
     impact: [
-      "EPP insider threat detection enabled",
-      "Automated threat response powered",
-      "IP protection investigations supported",
-      "Cross-team security data integration",
+      "5M endpoints integrated",
+      "9PB+ daily data volume",
+      "IP theft cases prevented",
+      "50 team members coordinated",
     ],
-    technologies: ["AWS", "Basin", "Security Analytics", "Threat Detection", "Data Pipelines"],
+    technologies: ["AWS", "Basin", "Security Analytics", "Threat Detection", "Data Pipelines", "Streaming/Batch Processing"],
     featured: true,
     image: "/images/projects/epp.png",
   },
@@ -275,6 +276,117 @@ export const projects: Project[] = [
     technologies: ["Mobile Development", "Real-Time APIs", "Inventory Systems"],
     featured: false,
     image: "/images/projects/Local_Inventory_Patent.png",
+  },
+  {
+    id: "12",
+    slug: "aip-alias-investigation-platform",
+    title: "AIP: Alias Investigation Platform",
+    company: "Amazon",
+    category: "Platform Engineering",
+    shortDescription:
+      "Built centralized IP investigation and insider risk platform serving 400+ weekly investigators tracking 1M+ employee aliases with EU privacy compliance.",
+    challenge:
+      "Amazon Security investigators needed a centralized platform to conduct insider risk and IP theft investigations across over one million employee aliases. Investigations were taking weeks because critical data—badge access, VPN logs, endpoint telemetry, network DNS data—was scattered across multiple systems. Additionally, EU privacy compliance requirements meant investigators couldn't simply access all employee data without proper controls and audit trails.",
+    approach:
+      "Led the end-to-end build of AIP, designing the architecture to pull badge data, VPN logs, and endpoint telemetry (including Route 53 corporate DNS data) from Basin into a unified investigation interface. Integrated multiple sensitive data sources, working with endpoint teams to unblock data access by providing context on investigative needs and facilitating data access requests following least-privilege principles. Partnered with Legal teams to ensure EU privacy compliance, implementing need-to-know access controls where investigators could only access aliases tied to open investigation tickets. Built comprehensive logging of all AIP activity with automated detections flagging any alias access not tied to an open investigation ticket.",
+    keyDeliverables: [
+      "Designed and built unified investigation interface pulling data from multiple Basin sources",
+      "Implemented need-to-know access controls with Legal partnership for EU privacy compliance",
+      "Built automated detections flagging unauthorized alias access for oversight",
+      "Established 10-year data retention framework meeting Legal requirements",
+      "Integrated badge data, VPN logs, endpoint telemetry, and Route 53 DNS data",
+    ],
+    impact: [
+      "400+ weekly investigators",
+      "1M+ aliases tracked",
+      "25% faster investigations",
+      "IP theft case supported",
+    ],
+    technologies: ["AWS", "Basin", "Security Analytics", "Access Controls", "Audit Systems", "Data Integration"],
+    featured: true,
+  },
+  {
+    id: "13",
+    slug: "fangorn-coral-collector-deployment",
+    title: "Fangorn Coral Collector Deployment",
+    company: "Amazon",
+    category: "Platform Engineering",
+    shortDescription:
+      "Deployed security log collectors on 350,000+ hosts across all AWS regions, achieving 97% security coverage with <1% CPU impact.",
+    challenge:
+      "Amazon Security's Fangorn program needed to deploy coral collectors on hosts across AWS to send security logs into Basin for threat detection and security analytics. However, service owners were extremely concerned about performance impact on production systems. The challenge was achieving comprehensive security coverage—97%+ of AWS traffic—without degrading host performance, particularly for AWS's largest services and highest-risk data intersection points like Route 53, S3, and DynamoDB.",
+    approach:
+      "Developed criteria for identifying in-scope services based on data sensitivity, risk reduction potential, and customer impact, identifying 300+ services with focus on critical data intersection points. Designed and executed comprehensive performance testing monitoring CPU usage (typically <1% utilization) and memory usage, identifying and mitigating risk of log backlog in host memory if downstream services became unavailable. Overcame major pushback from service owners by presenting extensive test data proving collectors would never affect hosts, showing multiple sources of host performance data under load. Partnered with CloudWatch team to establish monitoring and validation framework.",
+    keyDeliverables: [
+      "Identified and prioritized 300+ in-scope services based on risk criteria",
+      "Executed comprehensive performance testing proving <1% CPU impact",
+      "Negotiated deployment approval with skeptical service owners through data-driven approach",
+      "Partnered with CloudWatch to establish monitoring framework",
+      "Created reusable pattern for deploying security instrumentation on production systems",
+    ],
+    impact: [
+      "350K+ hosts deployed",
+      "97% AWS coverage",
+      "<1% CPU impact",
+      "300+ services coordinated",
+    ],
+    technologies: ["AWS", "Security Collectors", "Performance Testing", "CloudWatch", "Distributed Systems"],
+    featured: true,
+  },
+  {
+    id: "14",
+    slug: "gdpr-compliance-program",
+    title: "GDPR Compliance Program",
+    company: "Amazon",
+    category: "Process Improvement",
+    shortDescription:
+      "Partnered with Legal to provide audit data proving EU data privacy compliance, mitigating potential fines up to €20M or 4% of worldwide revenue.",
+    challenge:
+      "Amazon Legal teams needed to prove GDPR compliance to EU auditors but couldn't access the necessary data to demonstrate EU data privacy compliance. Without proper audit evidence, Amazon faced potential fines of up to €20M or 4% of total worldwide annual revenue—whichever was greater. The data needed for compliance evidence was distributed across Basin's data producers, and there was no established process for extracting and delivering this information to satisfy regulatory requirements.",
+    approach:
+      "Partnered directly with Legal to understand the specific audit requirements and what data would satisfy EU regulators. Worked across Basin's data producers to identify and extract the compliance evidence needed, coordinating data delivery in formats that met Legal's documentation requirements. Established a repeatable process for future compliance audits, ensuring Amazon could efficiently respond to ongoing regulatory inquiries without recreating the data gathering effort each time.",
+    keyDeliverables: [
+      "Partnered with Legal to define audit data requirements for GDPR compliance",
+      "Coordinated with data producers across Basin to extract compliance evidence",
+      "Delivered audit documentation meeting EU regulatory requirements",
+      "Established repeatable process for future compliance audits",
+    ],
+    impact: [
+      "GDPR compliance demonstrated",
+      "€20M+ potential fines avoided",
+      "Repeatable audit process",
+      "Legal partnership established",
+    ],
+    technologies: ["Data Governance", "Compliance", "Audit Systems", "Basin"],
+    featured: false,
+  },
+  {
+    id: "15",
+    slug: "kibo-enterprise-solutions-architecture",
+    title: "Kibo Enterprise Solutions Architecture",
+    company: "Kibo",
+    category: "Product Management",
+    shortDescription:
+      "Served as primary technical advisor for Fortune 500 clients including Ace Hardware, conducting on-site technical discovery and designing custom integrations.",
+    challenge:
+      "Enterprise clients like Ace Hardware required custom integrations and implementations that went far beyond standard product configurations. Each client had unique technical environments, legacy systems, and business requirements that demanded deep technical discovery and tailored solutions. Without dedicated technical advisory support, sales cycles stalled and implementations failed to meet client expectations, resulting in extended timelines and eroded trust.",
+    approach:
+      "Served as the primary technical advisor for Fortune 500 clients, traveling on-site to Chicago and other client locations for technical discovery and requirements gathering. Conducted architecture and design reviews focused on understanding each client's unique business requirements, existing technical infrastructure, and integration constraints. Designed custom integrations that bridged Kibo's commerce platform with client systems, and provided both pre-sales technical support to close deals and post-sales support to ensure successful implementations. Built trusted relationships with customer technical teams, IT management, and business stakeholders, acting as customer ambassador representing their voice internally.",
+    keyDeliverables: [
+      "Conducted on-site technical discovery for Fortune 500 clients including Ace Hardware",
+      "Designed custom integrations bridging commerce platform with client systems",
+      "Provided pre-sales technical support accelerating deal closure",
+      "Built trusted advisor relationships with client technical and business stakeholders",
+      "Represented customer voice internally as customer ambassador",
+    ],
+    impact: [
+      "Fortune 500 clients served",
+      "On-site technical advisory",
+      "Custom integrations delivered",
+      "Trusted advisor relationships",
+    ],
+    technologies: ["Enterprise Commerce", "System Integration", "Technical Advisory", "Requirements Analysis"],
+    featured: false,
   },
 ];
 
