@@ -304,6 +304,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS", "Basin", "Security Analytics", "Access Controls", "Audit Systems", "Data Integration"],
     featured: true,
+    image: "/images/projects/AIP_Investigation_Platform.png",
   },
   {
     id: "13",
@@ -332,6 +333,7 @@ export const projects: Project[] = [
     ],
     technologies: ["AWS", "Security Collectors", "Performance Testing", "CloudWatch", "Distributed Systems"],
     featured: true,
+    image: "/images/projects/Fangorn_Coral_Collector.png",
   },
   {
     id: "14",
