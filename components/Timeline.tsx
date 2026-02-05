@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Experience } from "@/data/experience";
 
@@ -11,6 +11,25 @@ interface TimelineProps {
 export default function Timeline({ experiences }: TimelineProps) {
   const [expandedId, setExpandedId] = useState<string | null>(experiences[0]?.id || null);
 
+  useEffect(() => {
+    // Check for hash in URL and expand corresponding experience
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#experience-')) {
+      const id = hash.replace('#experience-', '');
+      const experienceExists = experiences.some(exp => exp.id === id);
+      if (experienceExists) {
+        setExpandedId(id);
+        // Scroll to the element after a short delay to ensure it's rendered
+        setTimeout(() => {
+          const element = document.getElementById(`experience-${id}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      }
+    }
+  }, [experiences]);
+
   return (
     <div className="relative">
       {/* Vertical line */}
@@ -20,6 +39,7 @@ export default function Timeline({ experiences }: TimelineProps) {
         {experiences.map((exp, index) => (
           <div
             key={exp.id}
+            id={`experience-${exp.id}`}
             className={`relative flex flex-col md:flex-row gap-8 ${
               index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
             }`}

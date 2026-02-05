@@ -9,11 +9,11 @@ export default function Home() {
   const featuredProjects = projects.filter((p) => p.featured).slice(0, 3);
 
   const companyLogos = [
-    { src: "/images/logos/aws.svg", alt: "Amazon Web Services" },
-    { src: "/images/logos/nuorder.svg", alt: "NuORDER" },
-    { src: "/images/logos/kibo.svg", alt: "Kibo Commerce" },
-    { src: "/images/logos/john-deere.svg", alt: "John Deere" },
-    { src: "/images/logos/pfg.svg", alt: "Performance Food Group" },
+    { src: "/images/logos/aws.svg", alt: "Amazon Web Services", experienceId: "1" },
+    { src: "/images/logos/nuorder.svg", alt: "NuORDER", experienceId: "2" },
+    { src: "/images/logos/kibo.svg", alt: "Kibo Commerce", experienceId: "3" },
+    { src: "/images/logos/john-deere.svg", alt: "John Deere", experienceId: "4" },
+    { src: "/images/logos/pfg.svg", alt: "Performance Food Group", experienceId: "5" },
   ];
 
   return (
@@ -85,14 +85,18 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
             {companyLogos.map((logo) => (
-              <Image
+              <Link
                 key={logo.alt}
-                src={logo.src}
-                alt={logo.alt}
-                width={56}
-                height={56}
+                href={`/about#experience-${logo.experienceId}`}
                 className="opacity-60 hover:opacity-100 transition-opacity duration-200"
-              />
+              >
+                <Image
+                  src={logo.src}
+                  alt={logo.alt}
+                  width={56}
+                  height={56}
+                />
+              </Link>
             ))}
           </div>
         </div>
