@@ -53,6 +53,64 @@ export const projects: Project[] = [
     image: "/images/projects/Basin_Data_Lake.png",
   },
   {
+    id: "13",
+    slug: "fangorn-coral-collector-deployment",
+    title: "Fangorn Coral Collector Deployment",
+    company: "Amazon",
+    category: "Platform Engineering",
+    shortDescription:
+      "Deployed security log collectors on 350,000+ hosts across all AWS regions, achieving 97% security coverage with <1% CPU impact.",
+    challenge:
+      "Amazon Security's Fangorn program needed to deploy coral collectors on hosts across AWS to send security logs into Basin for threat detection and security analytics. However, service owners were extremely concerned about performance impact on production systems. The challenge was achieving comprehensive security coverage—97%+ of AWS traffic—without degrading host performance, particularly for AWS's largest services and highest-risk data intersection points like Route 53, S3, and DynamoDB.",
+    approach:
+      "Developed criteria for identifying in-scope services based on data sensitivity, risk reduction potential, and customer impact, identifying 300+ services with focus on critical data intersection points. Designed and executed comprehensive performance testing monitoring CPU usage (typically <1% utilization) and memory usage, identifying and mitigating risk of log backlog in host memory if downstream services became unavailable. Overcame major pushback from service owners by presenting extensive test data proving collectors would never affect hosts, showing multiple sources of host performance data under load. Partnered with CloudWatch team to establish monitoring and validation framework.",
+    keyDeliverables: [
+      "Identified and prioritized 300+ in-scope services based on risk criteria",
+      "Executed comprehensive performance testing proving <1% CPU impact",
+      "Negotiated deployment approval with skeptical service owners through data-driven approach",
+      "Partnered with CloudWatch to establish monitoring framework",
+      "Created reusable pattern for deploying security instrumentation on production systems",
+    ],
+    impact: [
+      "350K+ hosts deployed",
+      "97% AWS coverage",
+      "<1% CPU impact",
+      "300+ services coordinated",
+    ],
+    technologies: ["AWS", "Security Collectors", "Performance Testing", "CloudWatch", "Distributed Systems"],
+    featured: true,
+    image: "/images/projects/Fangorn_Coral_Collector.png",
+  },
+  {
+    id: "12",
+    slug: "aip-alias-investigation-platform",
+    title: "AIP: Alias Investigation Platform",
+    company: "Amazon",
+    category: "Platform Engineering",
+    shortDescription:
+      "Built centralized IP investigation and insider risk platform serving 400+ weekly investigators tracking 1M+ employee aliases with EU privacy compliance.",
+    challenge:
+      "Amazon Security investigators needed a centralized platform to conduct insider risk and IP theft investigations across over one million employee aliases. Investigations were taking weeks because critical data—badge access, VPN logs, endpoint telemetry, network DNS data—was scattered across multiple systems. Additionally, EU privacy compliance requirements meant investigators couldn't simply access all employee data without proper controls and audit trails.",
+    approach:
+      "Led the end-to-end build of AIP, designing the architecture to pull badge data, VPN logs, and endpoint telemetry (including Route 53 corporate DNS data) from Basin into a unified investigation interface. Integrated multiple sensitive data sources, working with endpoint teams to unblock data access by providing context on investigative needs and facilitating data access requests following least-privilege principles. Partnered with Legal teams to ensure EU privacy compliance, implementing need-to-know access controls where investigators could only access aliases tied to open investigation tickets. Built comprehensive logging of all AIP activity with automated detections flagging any alias access not tied to an open investigation ticket.",
+    keyDeliverables: [
+      "Designed and built unified investigation interface pulling data from multiple Basin sources",
+      "Implemented need-to-know access controls with Legal partnership for EU privacy compliance",
+      "Built automated detections flagging unauthorized alias access for oversight",
+      "Established 10-year data retention framework meeting Legal requirements",
+      "Integrated badge data, VPN logs, endpoint telemetry, and Route 53 DNS data",
+    ],
+    impact: [
+      "400+ weekly investigators",
+      "1M+ aliases tracked",
+      "25% faster investigations",
+      "IP theft case supported",
+    ],
+    technologies: ["AWS", "Basin", "Security Analytics", "Access Controls", "Audit Systems", "Data Integration"],
+    featured: true,
+    image: "/images/projects/AIP_Investigation_Platform.png",
+  },
+  {
     id: "2",
     slug: "basin-fleet-financial-review",
     title: "2026 Basin Fleet Financial Review",
@@ -278,64 +336,6 @@ export const projects: Project[] = [
     image: "/images/projects/Local_Inventory_Patent.png",
   },
   {
-    id: "12",
-    slug: "aip-alias-investigation-platform",
-    title: "AIP: Alias Investigation Platform",
-    company: "Amazon",
-    category: "Platform Engineering",
-    shortDescription:
-      "Built centralized IP investigation and insider risk platform serving 400+ weekly investigators tracking 1M+ employee aliases with EU privacy compliance.",
-    challenge:
-      "Amazon Security investigators needed a centralized platform to conduct insider risk and IP theft investigations across over one million employee aliases. Investigations were taking weeks because critical data—badge access, VPN logs, endpoint telemetry, network DNS data—was scattered across multiple systems. Additionally, EU privacy compliance requirements meant investigators couldn't simply access all employee data without proper controls and audit trails.",
-    approach:
-      "Led the end-to-end build of AIP, designing the architecture to pull badge data, VPN logs, and endpoint telemetry (including Route 53 corporate DNS data) from Basin into a unified investigation interface. Integrated multiple sensitive data sources, working with endpoint teams to unblock data access by providing context on investigative needs and facilitating data access requests following least-privilege principles. Partnered with Legal teams to ensure EU privacy compliance, implementing need-to-know access controls where investigators could only access aliases tied to open investigation tickets. Built comprehensive logging of all AIP activity with automated detections flagging any alias access not tied to an open investigation ticket.",
-    keyDeliverables: [
-      "Designed and built unified investigation interface pulling data from multiple Basin sources",
-      "Implemented need-to-know access controls with Legal partnership for EU privacy compliance",
-      "Built automated detections flagging unauthorized alias access for oversight",
-      "Established 10-year data retention framework meeting Legal requirements",
-      "Integrated badge data, VPN logs, endpoint telemetry, and Route 53 DNS data",
-    ],
-    impact: [
-      "400+ weekly investigators",
-      "1M+ aliases tracked",
-      "25% faster investigations",
-      "IP theft case supported",
-    ],
-    technologies: ["AWS", "Basin", "Security Analytics", "Access Controls", "Audit Systems", "Data Integration"],
-    featured: true,
-    image: "/images/projects/AIP_Investigation_Platform.png",
-  },
-  {
-    id: "13",
-    slug: "fangorn-coral-collector-deployment",
-    title: "Fangorn Coral Collector Deployment",
-    company: "Amazon",
-    category: "Platform Engineering",
-    shortDescription:
-      "Deployed security log collectors on 350,000+ hosts across all AWS regions, achieving 97% security coverage with <1% CPU impact.",
-    challenge:
-      "Amazon Security's Fangorn program needed to deploy coral collectors on hosts across AWS to send security logs into Basin for threat detection and security analytics. However, service owners were extremely concerned about performance impact on production systems. The challenge was achieving comprehensive security coverage—97%+ of AWS traffic—without degrading host performance, particularly for AWS's largest services and highest-risk data intersection points like Route 53, S3, and DynamoDB.",
-    approach:
-      "Developed criteria for identifying in-scope services based on data sensitivity, risk reduction potential, and customer impact, identifying 300+ services with focus on critical data intersection points. Designed and executed comprehensive performance testing monitoring CPU usage (typically <1% utilization) and memory usage, identifying and mitigating risk of log backlog in host memory if downstream services became unavailable. Overcame major pushback from service owners by presenting extensive test data proving collectors would never affect hosts, showing multiple sources of host performance data under load. Partnered with CloudWatch team to establish monitoring and validation framework.",
-    keyDeliverables: [
-      "Identified and prioritized 300+ in-scope services based on risk criteria",
-      "Executed comprehensive performance testing proving <1% CPU impact",
-      "Negotiated deployment approval with skeptical service owners through data-driven approach",
-      "Partnered with CloudWatch to establish monitoring framework",
-      "Created reusable pattern for deploying security instrumentation on production systems",
-    ],
-    impact: [
-      "350K+ hosts deployed",
-      "97% AWS coverage",
-      "<1% CPU impact",
-      "300+ services coordinated",
-    ],
-    technologies: ["AWS", "Security Collectors", "Performance Testing", "CloudWatch", "Distributed Systems"],
-    featured: true,
-    image: "/images/projects/Fangorn_Coral_Collector.png",
-  },
-  {
     id: "14",
     slug: "gdpr-compliance-program",
     title: "GDPR Compliance Program",
@@ -361,6 +361,7 @@ export const projects: Project[] = [
     ],
     technologies: ["Data Governance", "Compliance", "Audit Systems", "Basin"],
     featured: false,
+    image: "/images/projects/GDPR_Compliance.png",
   },
   {
     id: "15",
@@ -389,6 +390,7 @@ export const projects: Project[] = [
     ],
     technologies: ["Enterprise Commerce", "System Integration", "Technical Advisory", "Requirements Analysis"],
     featured: false,
+    image: "/images/projects/Kibo_Enterprise_Solutions.png",
   },
 ];
 

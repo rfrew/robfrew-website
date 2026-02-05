@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-24 md:py-32 lg:py-40">
+      <section className="py-16 md:py-20 lg:py-24">
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
             I turn complex technical challenges
