@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { getServicePackage } from "@/data/services";
 
+// Bounds for "pay a custom amount". Stripe's card minimum is $0.50; the cap
+// guards against typos (an extra zero) more than abuse — raise it if a real
+// balance ever exceeds it.
+const CUSTOM_MIN_CENTS = 100; // $1
+const CUSTOM_MAX_CENTS = 2_500_000; // $25,000
+
 export async function POST(request: Request) {
   try {
     if (!isStripeConfigured) {
@@ -11,8 +17,33 @@ export async function POST(request: Request) {
       );
     }
 
-    const { packageId } = await request.json();
-    const pkg = getServicePackage(packageId);
+    const { packageId, customAmountCents, memo } = await request.json();
+
+    // Two ways in: a predefined package, or a custom amount someone owes.
+    let pkg = null;
+    let memoNote = "";
+    if (packageId === "custom") {
+      if (
+        !Number.isInteger(customAmountCents) ||
+        customAmountCents < CUSTOM_MIN_CENTS ||
+        customAmountCents > CUSTOM_MAX_CENTS
+      ) {
+        return NextResponse.json(
+          { error: "Amount must be between $1 and $25,000." },
+          { status: 400 }
+        );
+      }
+      memoNote = typeof memo === "string" ? memo.trim().slice(0, 200) : "";
+      pkg = {
+        id: "custom",
+        name: "Custom Payment",
+        description: memoNote || "Payment to Rob Frew",
+        amount: customAmountCents,
+        interval: undefined,
+      };
+    } else {
+      pkg = getServicePackage(packageId);
+    }
 
     if (!pkg) {
       return NextResponse.json(
@@ -56,7 +87,7 @@ export async function POST(request: Request) {
       success_url: `${origin}/pay/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pay`,
       // Metadata is echoed back on the webhook event — handy for fulfillment.
-      metadata: { packageId: pkg.id },
+      metadata: { packageId: pkg.id, ...(memoNote && { memo: memoNote }) },
     });
 
     return NextResponse.json({ url: session.url });

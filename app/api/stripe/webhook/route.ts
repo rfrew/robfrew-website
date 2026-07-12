@@ -63,6 +63,7 @@ export async function POST(request: Request) {
       // Rob is notified by email via Dashboard notification settings.
       console.log("✅ Payment received:", {
         packageId: session.metadata?.packageId,
+        memo: session.metadata?.memo,
         mode: session.mode,
         email: session.customer_details?.email,
         amountTotal: session.amount_total,

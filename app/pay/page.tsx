@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import ServicePackages from "@/components/ServicePackages";
+import CustomAmount from "@/components/CustomAmount";
 
 export const metadata: Metadata = {
   title: "Work With Me",
@@ -31,6 +32,13 @@ export default function PayPage() {
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
           <ServicePackages />
+        </div>
+      </section>
+
+      {/* Custom amount */}
+      <section className="py-16">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
+          <CustomAmount />
         </div>
       </section>
     </div>
