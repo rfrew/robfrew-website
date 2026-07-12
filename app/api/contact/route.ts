@@ -3,12 +3,10 @@ import { NextResponse } from "next/server";
 // Delivers contact-form submissions via Resend (https://resend.com).
 // Requires two env vars (set in .env.local and Vercel):
 //   RESEND_API_KEY    — from the Resend dashboard
-//   CONTACT_TO_EMAIL  — where submissions land. Until the robfrew.com domain
-//                       is verified in Resend, this must be the email the
-//                       Resend account was created with.
-// CONTACT_FROM_EMAIL is optional; the default works without domain
-// verification. After verifying the domain, set it to e.g.
-// "Rob Frew Website <website@robfrew.com>".
+//   CONTACT_TO_EMAIL  — where submissions land
+// The default from address uses updates.robfrew.com, the domain verified for
+// sending in the Resend dashboard; override with CONTACT_FROM_EMAIL if that
+// ever changes. The sender domain must stay verified in Resend or sends 403.
 
 const MAX_LENGTHS: Record<string, number> = {
   name: 100,
@@ -74,7 +72,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: process.env.CONTACT_FROM_EMAIL ?? "Rob Frew Website <onboarding@resend.dev>",
+        from: process.env.CONTACT_FROM_EMAIL ?? "Rob Frew Website <website@updates.robfrew.com>",
         to: [to],
         reply_to: email,
         subject: `New contact from ${name}`,
