@@ -157,6 +157,7 @@ export default function Home() {
                   src="/images/headshot.jpg"
                   alt="Rob Frew"
                   fill
+                  sizes="(max-width: 1024px) 100vw, 33vw"
                   className="object-cover"
                 />
               </div>

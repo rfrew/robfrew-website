@@ -74,6 +74,7 @@ export default function Timeline({ experiences }: TimelineProps) {
                         src={exp.logo}
                         alt={`${exp.company} logo`}
                         fill
+                        sizes="40px"
                         className="object-contain"
                       />
                     </div>
