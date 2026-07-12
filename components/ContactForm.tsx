@@ -155,12 +155,18 @@ export default function ContactForm() {
 
       {/* Status Messages */}
       {submitStatus === "success" && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-800">
+        <div
+          role="status"
+          className="p-4 bg-green-50 border border-green-200 text-green-800"
+        >
           Thanks for reaching out! I&apos;ll get back to you within 24 hours.
         </div>
       )}
       {submitStatus === "error" && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-800">
+        <div
+          role="alert"
+          className="p-4 bg-red-50 border border-red-200 text-red-800"
+        >
           Oops! Something went wrong. Please try emailing me directly at{" "}
           <a href="mailto:rob@robfrew.com" className="underline">
             rob@robfrew.com

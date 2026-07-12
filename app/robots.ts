@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/"],
     },
-    sitemap: "https://robfrew.com/sitemap.xml",
+    sitemap: "https://www.robfrew.com/sitemap.xml",
   };
 }

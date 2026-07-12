@@ -13,7 +13,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://robfrew.com"),
+  // The site is served on www (apex 307s there) — every absolute URL we
+  // advertise to crawlers must use the www host or they all hit redirects.
+  metadataBase: new URL("https://www.robfrew.com"),
+  alternates: {
+    canonical: "./",
+  },
   title: {
     default: "Rob Frew | Senior Technical Program Manager",
     template: "%s | Rob Frew",
@@ -32,32 +37,25 @@ export const metadata: Metadata = {
     "cloud infrastructure",
     "release management",
   ],
-  authors: [{ name: "Rob Frew", url: "https://robfrew.com" }],
+  authors: [{ name: "Rob Frew", url: "https://www.robfrew.com" }],
   creator: "Rob Frew",
   publisher: "Rob Frew",
   openGraph: {
     title: "Rob Frew | Senior Technical Program Manager",
     description:
       "Senior TPM with 15+ years building platforms at scale. Managed Amazon's 9PB-daily security data lake, delivered $50M+ impact.",
-    url: "https://robfrew.com",
+    url: "https://www.robfrew.com",
     siteName: "Rob Frew",
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Rob Frew - Senior Technical Program Manager",
-      },
-    ],
+    // Images come from app/opengraph-image.tsx / app/twitter-image.tsx —
+    // don't list them here or the metadata points at files that don't exist.
   },
   twitter: {
     card: "summary_large_image",
     title: "Rob Frew | Senior Technical Program Manager",
     description:
       "Senior TPM with 15+ years building platforms at scale. Managed Amazon's 9PB-daily security data lake, delivered $50M+ impact.",
-    images: ["/og-image.png"],
   },
   robots: {
     index: true,
@@ -69,10 +67,6 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
-  },
-  verification: {
-    // Add these when you set up Google Search Console
-    // google: "your-google-verification-code",
   },
 };
 

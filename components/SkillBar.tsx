@@ -44,9 +44,17 @@ export default function SkillBar({ name, level }: SkillBarProps) {
         <span className="text-sm font-medium text-gray-800">{name}</span>
         <span className="text-xs font-medium text-gray-500">{level}</span>
       </div>
-      <div className="h-2 bg-gray-200 overflow-hidden">
+      <div
+        className="h-2 bg-gray-200 overflow-hidden"
+        role="progressbar"
+        aria-label={name}
+        aria-valuenow={percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuetext={level}
+      >
         <div
-          className="h-full bg-black transition-all duration-1000 ease-out"
+          className="h-full bg-black transition-all duration-1000 ease-out motion-reduce:transition-none"
           style={{
             width: isVisible ? `${percent}%` : "0%",
           }}

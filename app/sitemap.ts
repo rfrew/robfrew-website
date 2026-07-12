@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { projects } from "@/data/projects";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://robfrew.com";
+  const baseUrl = "https://www.robfrew.com";
 
   // Static pages
   const staticPages = [
@@ -38,6 +38,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/pay`,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.8,

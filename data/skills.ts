@@ -143,7 +143,7 @@ export const certifications = [
 export const patents = [
   {
     name: "Local Inventory Search Patent",
-    company: "Finderbot Technology",
+    company: "Shopatron",
     description:
       "Co-authored patent for innovative local inventory search solution enabling real-time stock requests, retailer aggregation, and mobile-optimized consumer experience. First creation of Shopatron Startups following Lean Startup methodology.",
   },

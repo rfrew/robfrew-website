@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { getServicePackage } from "@/data/services";
+import { clientIp, isRateLimited } from "@/lib/rate-limit";
 
 // Bounds for "pay a custom amount". Stripe's card minimum is $0.50; the cap
 // guards against typos (an extra zero) more than abuse — raise it if a real
@@ -14,6 +15,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Payments are not configured yet." },
         { status: 503 }
+      );
+    }
+
+    if (isRateLimited(`checkout:${clientIp(request)}`, 10, 60_000)) {
+      return NextResponse.json(
+        { error: "Too many requests — please wait a minute and try again." },
+        { status: 429 }
       );
     }
 

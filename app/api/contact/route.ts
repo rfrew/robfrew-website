@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientIp, isRateLimited } from "@/lib/rate-limit";
 
 // Delivers contact-form submissions via Resend (https://resend.com).
 // Requires two env vars (set in .env.local and Vercel):
@@ -26,6 +27,13 @@ function escapeHtml(value: string): string {
 
 export async function POST(request: Request) {
   try {
+    if (isRateLimited(`contact:${clientIp(request)}`, 5, 60_000)) {
+      return NextResponse.json(
+        { error: "Too many messages — please wait a minute and try again." },
+        { status: 429 }
+      );
+    }
+
     const data = await request.json();
     const { name, email, company, role, message } = data;
 

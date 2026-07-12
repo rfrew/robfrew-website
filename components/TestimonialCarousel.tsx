@@ -17,9 +17,21 @@ export default function TestimonialCarousel({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const typingRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentTestimonial = testimonials[currentIndex];
+
+  // Respect the OS-level "reduce motion" preference: no typewriter, no
+  // auto-advance. Manual navigation still works.
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -44,7 +56,14 @@ export default function TestimonialCarousel({
 
   // Typewriter effect
   useEffect(() => {
+    if (!currentTestimonial) return;
     const fullText = currentTestimonial.quote;
+
+    if (reduceMotion) {
+      setDisplayedText(fullText);
+      if (!isTypingComplete) setIsTypingComplete(true);
+      return;
+    }
 
     if (displayedText.length < fullText.length) {
       typingRef.current = setTimeout(() => {
@@ -57,25 +76,42 @@ export default function TestimonialCarousel({
     } else if (displayedText.length === fullText.length && !isTypingComplete) {
       setIsTypingComplete(true);
     }
-  }, [displayedText, currentTestimonial.quote, typingSpeed, isTypingComplete]);
+  }, [displayedText, currentTestimonial, typingSpeed, isTypingComplete, reduceMotion]);
 
-  // Auto-advance after typing complete
+  // Auto-advance after typing complete (not while hovered/focused, and not
+  // at all for reduced-motion users — WCAG pause/stop/hide).
   useEffect(() => {
-    if (!isTypingComplete) return;
+    if (!isTypingComplete || isPaused || reduceMotion) return;
 
     const timer = setTimeout(() => {
       goToNext();
     }, pauseAfterTyping);
 
     return () => clearTimeout(timer);
-  }, [isTypingComplete, pauseAfterTyping, goToNext]);
+  }, [isTypingComplete, isPaused, reduceMotion, pauseAfterTyping, goToNext]);
+
+  if (!currentTestimonial) return null;
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onBlur={() => setIsPaused(false)}
+    >
+      {/* Full quote for screen readers — announced once per testimonial,
+          instead of the character-by-character animated version below. */}
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        &quot;{currentTestimonial.quote}&quot; — {currentTestimonial.author}
+      </p>
       {/* Testimonial Content */}
       <div className="min-h-[320px] md:min-h-[280px] flex flex-col">
         <blockquote className="border-l-4 border-black pl-6 py-4 w-full flex-grow flex flex-col">
-          <p className="text-gray-700 leading-relaxed mb-6 italic text-lg md:text-xl flex-grow">
+          <p
+            aria-hidden="true"
+            className="text-gray-700 leading-relaxed mb-6 italic text-lg md:text-xl flex-grow"
+          >
             <span>&quot;</span>
             <span>{displayedText}</span>
             <span

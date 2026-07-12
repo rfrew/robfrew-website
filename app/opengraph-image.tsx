@@ -76,7 +76,7 @@ export default async function Image() {
             <div style={{ fontSize: 48, fontWeight: 700, color: "#ffffff" }}>
               6
             </div>
-            <div style={{ fontSize: 18, color: "#737373" }}>AWS Certs</div>
+            <div style={{ fontSize: 18, color: "#737373" }}>Certs</div>
           </div>
         </div>
 

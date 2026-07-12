@@ -6,7 +6,7 @@ export default function StructuredData() {
     jobTitle: "Senior Technical Program Manager",
     description:
       "Senior TPM with 15+ years building platforms at scale. Managed Amazon's 9PB-daily security data lake, delivered $50M+ impact.",
-    url: "https://robfrew.com",
+    url: "https://www.robfrew.com",
     email: "rob@robfrew.com",
     address: {
       "@type": "PostalAddress",
@@ -69,7 +69,7 @@ export default function StructuredData() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Rob Frew - Senior Technical Program Manager",
-    url: "https://robfrew.com",
+    url: "https://www.robfrew.com",
     description:
       "Portfolio website of Rob Frew, Senior Technical Program Manager with 15+ years experience in cloud infrastructure, AI/ML platforms, and platform engineering.",
     author: {

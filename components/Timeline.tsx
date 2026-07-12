@@ -12,22 +12,29 @@ export default function Timeline({ experiences }: TimelineProps) {
   const [expandedId, setExpandedId] = useState<string | null>(experiences[0]?.id || null);
 
   useEffect(() => {
-    // Check for hash in URL and expand corresponding experience
-    const hash = window.location.hash;
-    if (hash && hash.startsWith('#experience-')) {
-      const id = hash.replace('#experience-', '');
-      const experienceExists = experiences.some(exp => exp.id === id);
-      if (experienceExists) {
-        setExpandedId(id);
-        // Scroll to the element after a short delay to ensure it's rendered
-        setTimeout(() => {
-          const element = document.getElementById(`experience-${id}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
+    // Expand + scroll to the experience named in the URL hash — on load and
+    // whenever an in-page #experience-… link changes the hash.
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#experience-')) {
+        const id = hash.replace('#experience-', '');
+        const experienceExists = experiences.some(exp => exp.id === id);
+        if (experienceExists) {
+          setExpandedId(id);
+          // Scroll to the element after a short delay to ensure it's rendered
+          setTimeout(() => {
+            const element = document.getElementById(`experience-${id}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+        }
       }
-    }
+    };
+
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
   }, [experiences]);
 
   return (
@@ -60,6 +67,7 @@ export default function Timeline({ experiences }: TimelineProps) {
             >
               <button
                 onClick={() => setExpandedId(expandedId === exp.id ? null : exp.id)}
+                aria-expanded={expandedId === exp.id}
                 className="w-full text-left bg-white border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200"
               >
                 {/* Date badge - desktop */}

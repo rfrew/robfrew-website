@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const quickStats = [
   { value: "15+", label: "Years Experience" },
   { value: "$50M+", label: "Career Impact" },
-  { value: "6", label: "AWS Certifications" },
+  { value: "6", label: "Certifications" },
   { value: "Exceeds", label: "High Bar Performer" },
 ];
 
