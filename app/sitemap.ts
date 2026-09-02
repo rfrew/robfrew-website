@@ -48,6 +48,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     },
+    // TrAction app pages (linked from the App Store / Google Play listings)
+    {
+      url: `${baseUrl}/traction/privacy`,
+      lastModified: new Date(),
+      changeFrequency: "yearly" as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/traction/support`,
+      lastModified: new Date(),
+      changeFrequency: "yearly" as const,
+      priority: 0.5,
+    },
   ];
 
   // Dynamic project pages
