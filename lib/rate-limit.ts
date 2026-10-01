@@ -41,3 +41,34 @@ export function clientIp(request: Request): string {
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
   );
 }
+
+/**
+ * Throttle key for an IP: IPv4 as-is, IPv6 collapsed to its /64 prefix so one
+ * device (or one home network) cannot dodge a limit by rotating addresses
+ * inside the block it was assigned.
+ */
+export function ipThrottleKey(ip: string): string {
+  if (!ip.includes(":")) return ip;
+  const address = ip.split("%")[0].toLowerCase();
+  // IPv4-mapped (::ffff:203.0.113.7) — key on the embedded IPv4 address.
+  const mapped = address.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+  if (mapped) return mapped[1];
+
+  const [head, tail] = address.split("::");
+  const headGroups = head ? head.split(":") : [];
+  const tailGroups = tail ? tail.split(":") : [];
+  const groups =
+    tail === undefined
+      ? headGroups
+      : [
+          ...headGroups,
+          ...Array(Math.max(0, 8 - headGroups.length - tailGroups.length)).fill("0"),
+          ...tailGroups,
+        ];
+  return (
+    groups
+      .slice(0, 4)
+      .map((g) => g.replace(/^0+(?=.)/, ""))
+      .join(":") + "::/64"
+  );
+}
