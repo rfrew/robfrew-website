@@ -1,5 +1,6 @@
-// What the TrAction join form hands to the "you're in" page: stored in this
-// tab's sessionStorage across the navigation. Never the password or the code.
+// What the TrAction join form keeps in this tab's sessionStorage: the result
+// it hands to the "you're in" page, and the agency code from the join link (so
+// a reload does not lose it). Never the password.
 
 const JOINED_KEY = "traction-joined";
 
@@ -36,5 +37,34 @@ export function parseJoined(raw: string | null): Joined | null {
     return { email, agencyName: typeof agencyName === "string" ? agencyName : undefined };
   } catch {
     return null;
+  }
+}
+
+const CODE_KEY = "traction-join-code";
+
+/** Remembers the agency code from the join link for this tab only. */
+export function writeJoinCode(code: string): void {
+  try {
+    sessionStorage.setItem(CODE_KEY, code);
+  } catch {
+    // Storage unavailable: a reload simply loses the code, as before.
+  }
+}
+
+export function readJoinCode(): string {
+  try {
+    return sessionStorage.getItem(CODE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+/** Forgets the code once it has been used, so the next person on a shared
+ *  device cannot join the previous person's agency by accident. */
+export function clearJoinCode(): void {
+  try {
+    sessionStorage.removeItem(CODE_KEY);
+  } catch {
+    // Nothing stored, nothing to clear.
   }
 }

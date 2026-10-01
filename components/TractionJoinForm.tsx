@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { writeJoined } from "@/lib/traction-join";
+import {
+  clearJoinCode,
+  readJoinCode,
+  writeJoinCode,
+  writeJoined,
+} from "@/lib/traction-join";
 
 type Field = "fullName" | "email" | "code" | "password" | "confirm";
 
@@ -43,6 +48,9 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   // successful join (the next page failed to load, or the user pressed stop).
   const [stalled, setStalled] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  // True from a successful join until the browser leaves for the next page.
+  const leavingAfterJoin = useRef(false);
+  const stallTimer = useRef<number | undefined>(undefined);
   // False in the server HTML, true once React is running. Until then the
   // submit button is disabled, so the browser can never submit the form
   // natively (which would bypass every check here).
@@ -53,32 +61,69 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
       if (!e.persisted) return;
+      // Timers are frozen with the page and resume here: stop the pending
+      // "stalled" switch from firing on a form that is usable again.
+      window.clearTimeout(stallTimer.current);
+      // Back after a completed join: the code has been used, so the next
+      // person on this device must open their own office's link.
+      if (leavingAfterJoin.current) setCode("");
+      leavingAfterJoin.current = false;
       setIsSubmitting(false);
       setStalled(false);
       setPassword("");
       setConfirm("");
       setShowPassword(false);
     };
+    // Leaving for any other reason (reload, pull-to-refresh, another link)
+    // with a password typed in makes the browser offer to save a password for
+    // an account that was never created. Empty the fields first — directly in
+    // the DOM, since the page is going away before React would re-render. A
+    // real join is exempt so its save prompt still appears.
+    const onPageHide = () => {
+      if (leavingAfterJoin.current) return;
+      formRef.current
+        ?.querySelectorAll<HTMLInputElement>("#password, #confirm")
+        .forEach((input) => {
+          input.value = "";
+        });
+      setPassword("");
+      setConfirm("");
+    };
     window.addEventListener("pageshow", onPageShow);
-    return () => window.removeEventListener("pageshow", onPageShow);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("pagehide", onPageHide);
+    };
   }, []);
 
   // The office's link can carry the code after a "#" so agents don't type it.
   // A fragment never reaches the server, so the code stays out of access logs;
-  // it is also removed from the address bar once read.
+  // it is also removed from the address bar once read, and remembered for this
+  // tab so a reload (or pull-to-refresh) does not lose it.
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (!hash) return;
-    let fromLink = hash;
-    try {
-      fromLink = decodeURIComponent(hash);
-    } catch {
-      // A link mangled in transit: use it as-is; the server rejects a bad code.
-    }
-    fromLink = fromLink.trim();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of the URL fragment, which does not exist during server render
-    setCode(fromLink.slice(0, 64));
-    window.history.replaceState(null, "", window.location.pathname);
+    const readCode = () => {
+      const hash = window.location.hash.slice(1);
+      let fromLink = "";
+      if (hash) {
+        fromLink = hash;
+        try {
+          fromLink = decodeURIComponent(hash);
+        } catch {
+          // A link mangled in transit: use it as-is; the server rejects a bad code.
+        }
+        fromLink = fromLink.trim().slice(0, 64);
+        window.history.replaceState(null, "", window.location.pathname);
+        if (fromLink) writeJoinCode(fromLink);
+      } else {
+        fromLink = readJoinCode();
+      }
+      if (fromLink) setCode(fromLink);
+    };
+    readCode();
+    // A different join link opened in this same tab only changes the fragment.
+    window.addEventListener("hashchange", readCode);
+    return () => window.removeEventListener("hashchange", readCode);
   }, []);
 
   // Editing a field clears its own error; either password field clears the
@@ -155,11 +200,13 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
     const result: Partial<JoinResponse> | null = await response.json().catch(() => null);
     if (response.ok && result?.ok) {
       writeJoined({ agencyName: result.agencyName, email: result.email ?? email });
+      clearJoinCode();
       // A real page load after the submit (not an in-place swap) is what lets
       // the browser offer to save the new password. The button stays disabled
       // so a second tap cannot resubmit while the next page loads.
+      leavingAfterJoin.current = true;
       window.location.assign(donePath);
-      window.setTimeout(() => setStalled(true), 4000);
+      stallTimer.current = window.setTimeout(() => setStalled(true), 4000);
       return;
     }
 

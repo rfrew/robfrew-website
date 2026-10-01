@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { traction } from "@/data/traction";
 
-// Shared frame for the TrAction public pages (privacy + support). Kept
+// Shared frame for the TrAction public pages (privacy, support, join). Kept
 // deliberately plain: these are reference pages the app stores link to.
+// The bar's links are plain anchors (full page loads) on purpose: leaving the
+// join form must unload the page so its typed passwords are discarded.
 export default function TractionLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -12,18 +13,18 @@ export default function TractionLayout({
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-3xl py-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <span className="text-base font-bold">{traction.name}</span>
           <nav aria-label="TrAction pages" className="flex gap-x-6">
-            <Link
+            <a
               href={traction.supportPath}
               className="text-gray-600 hover:text-black underline-offset-4 hover:underline"
             >
               Support
-            </Link>
-            <Link
+            </a>
+            <a
               href={traction.privacyPath}
               className="text-gray-600 hover:text-black underline-offset-4 hover:underline"
             >
               Privacy Policy
-            </Link>
+            </a>
           </nav>
         </div>
       </section>
