@@ -112,7 +112,9 @@ export async function POST(request: Request) {
 
     const fullName =
       typeof raw.fullName === "string" ? raw.fullName.trim().replace(/\s+/g, " ") : "";
-    if (fullName.length < 2 || fullName.length > 60) {
+    // Count characters the way Postgres does (code points, not UTF-16 units).
+    const nameLength = [...fullName].length;
+    if (nameLength < 2 || nameLength > 60) {
       return invalid("fullName", "Enter your full name (2 to 60 characters).");
     }
 
@@ -150,12 +152,21 @@ export async function POST(request: Request) {
 
     // 2. Create the auth user. Never updates an existing one. email_confirm
     // skips the confirmation email (there is no email verification yet).
-    const { data: created, error: createError } = await admin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      app_metadata: { source: "join-page" },
-    });
+    const createUser = () =>
+      admin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        app_metadata: { source: "join-page" },
+      });
+    let { data: created, error: createError } = await createUser();
+    // Two submissions of the same email at once (a double tap, two tabs): the
+    // loser fails inside Supabase Auth with an unexpected error rather than
+    // "email exists". Asking once more gives the true answer — "already
+    // exists" if the other request won, or a clean create if it was a blip.
+    if (createError && (createError.code === "unexpected_failure" || !createError.code)) {
+      ({ data: created, error: createError } = await createUser());
+    }
     if (createError || !created.user) {
       const errorCode = createError?.code;
       if (errorCode === "email_exists" || errorCode === "user_already_exists") {
