@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { JOINED_KEY } from "@/components/TractionJoinDone";
 
 type Field = "fullName" | "email" | "code" | "password" | "confirm";
 
@@ -14,15 +15,16 @@ interface JoinResponse {
 
 interface Props {
   contactEmail: string;
-  appStoreUrl: string;
+  donePath: string;
 }
 
 const PASSWORD_MIN = 8;
 
+// scroll-mt clears the site's fixed header when a field is scrolled into view.
 const inputClass =
-  "w-full px-4 py-3 text-base border border-gray-300 focus:border-black focus:outline-none transition-colors";
+  "w-full px-4 py-3 text-base border border-gray-300 focus:border-black focus:outline-none transition-colors scroll-mt-32";
 
-export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
+export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -31,7 +33,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<{ field?: Field; message: string } | null>(null);
-  const [joined, setJoined] = useState<{ agencyName?: string; email: string } | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // The office's link can carry the code after a "#" so agents don't type it.
   // A fragment never reaches the server, so the code stays out of access logs;
@@ -46,21 +48,57 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
       // A link mangled in transit: use it as-is; the server rejects a bad code.
     }
     fromLink = fromLink.trim();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of the URL fragment, which does not exist during server render
     setCode(fromLink.slice(0, 64));
     window.history.replaceState(null, "", window.location.pathname);
   }, []);
+
+  // Editing a field clears its own error; either password field clears the
+  // mismatch message.
+  const edit = (field: Field, set: (value: string) => void) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      set(e.target.value);
+      setError((current) => {
+        if (!current) return current;
+        const passwords = field === "password" || field === "confirm";
+        if (current.field === field || (passwords && current.field === "confirm")) {
+          return null;
+        }
+        return current;
+      });
+    };
+
+  // Show an error and bring its field into view (the submit button can be a
+  // full screen below the field on a small phone).
+  const fail = (failure: { field?: Field; message: string }) => {
+    setError(failure);
+    if (!failure.field) return;
+    const input = formRef.current?.querySelector<HTMLInputElement>(`#${failure.field}`);
+    input?.focus({ preventScroll: true });
+    input?.scrollIntoView({ block: "start", behavior: "smooth" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
 
+    // The form is noValidate so these messages appear inline, under the
+    // field, instead of in the browser's own bubble. The server checks again.
+    const nameLength = [...fullName.trim().replace(/\s+/g, " ")].length;
+    if (nameLength < 2 || nameLength > 60) {
+      return fail({ field: "fullName", message: "Enter your full name (2 to 60 characters)." });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return fail({ field: "email", message: "Enter a valid email address." });
+    }
+    if (!code.trim()) {
+      return fail({ field: "code", message: "Enter the agency code from your office." });
+    }
     if (password.length < PASSWORD_MIN) {
-      setError({ field: "password", message: `Use at least ${PASSWORD_MIN} characters.` });
-      return;
+      return fail({ field: "password", message: `Use at least ${PASSWORD_MIN} characters.` });
     }
     if (password !== confirm) {
-      setError({ field: "confirm", message: "The two passwords don't match." });
-      return;
+      return fail({ field: "confirm", message: "The two passwords don't match." });
     }
 
     setIsSubmitting(true);
@@ -73,71 +111,28 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
       });
       const result: JoinResponse = await response.json();
       if (response.ok && result.ok) {
-        setPassword("");
-        setConfirm("");
-        setJoined({ agencyName: result.agencyName, email: result.email ?? email });
-        window.scrollTo(0, 0);
-      } else {
-        setError({ field: result.field, message: result.message });
+        try {
+          sessionStorage.setItem(
+            JOINED_KEY,
+            JSON.stringify({ agencyName: result.agencyName, email: result.email ?? email })
+          );
+        } catch {
+          // Storage unavailable: the next page falls back to a generic message.
+        }
+        // A real page load after the submit (not an in-place swap) is what
+        // lets the browser offer to save the new password.
+        window.location.assign(donePath);
+        return;
       }
+      setIsSubmitting(false);
+      fail({ field: result.field, message: result.message });
     } catch {
+      setIsSubmitting(false);
       setError({
         message: `Couldn't reach the server. Check your connection and try again, or email ${contactEmail}.`,
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
-
-  if (joined) {
-    return (
-      <div role="status">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">You&apos;re in</h1>
-        <p className="text-lg leading-relaxed text-gray-700 mb-6">
-          Your TrAction account
-          {joined.agencyName ? (
-            <>
-              {" "}
-              with <strong>{joined.agencyName}</strong>
-            </>
-          ) : null}{" "}
-          is ready. Your sign-in email is:
-        </p>
-        <p className="text-xl font-semibold break-all border border-gray-300 px-4 py-3 mb-8">
-          {joined.email}
-        </p>
-
-        <h2 className="text-xl font-semibold mb-3">Next steps</h2>
-        <ol className="list-decimal pl-6 space-y-2 text-lg text-gray-700 mb-6">
-          <li>Install TrAction on your iPhone.</li>
-          <li>Open TrAction.</li>
-          <li>Sign in with the email above and the password you just chose.</li>
-        </ol>
-        <a
-          href={appStoreUrl}
-          className="block w-full text-center bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200 mb-6"
-        >
-          Get TrAction on the App Store
-        </a>
-
-        <p className="text-gray-600 mb-3">
-          If your iPhone suggested a password, it&apos;s saved in Settings ›
-          Passwords.
-        </p>
-        <p className="text-gray-600 mb-3">
-          TrAction is iPhone-only for now. On Android? Your account is ready
-          for when the Android app arrives.
-        </p>
-        <p className="text-gray-600">
-          Wrong email, or stuck? Email{" "}
-          <a href={`mailto:${contactEmail}`} className="underline hover:text-black">
-            {contactEmail}
-          </a>
-          .
-        </p>
-      </div>
-    );
-  }
 
   const fieldError = (field: Field) =>
     error?.field === field ? (
@@ -156,7 +151,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
         TrAction app with this email and password.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-6">
         <div>
           <label htmlFor="fullName" className="block text-sm font-semibold mb-2">
             Full name
@@ -170,7 +165,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             maxLength={60}
             autoComplete="name"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            onChange={edit("fullName", setFullName)}
             aria-invalid={error?.field === "fullName"}
             aria-describedby={describedBy("fullName")}
             className={inputClass}
@@ -197,7 +192,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             autoCorrect="off"
             spellCheck={false}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={edit("email", setEmail)}
             aria-invalid={error?.field === "email"}
             aria-describedby={describedBy("email")}
             className={inputClass}
@@ -220,7 +215,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             autoCorrect="off"
             spellCheck={false}
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={edit("code", setCode)}
             aria-invalid={error?.field === "code"}
             aria-describedby={describedBy("code")}
             className={`${inputClass} uppercase tracking-wider`}
@@ -229,7 +224,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
         </div>
 
         <div>
-          <div className="flex items-baseline justify-between mb-2">
+          <div className="flex items-center justify-between">
             <label htmlFor="password" className="block text-sm font-semibold">
               Password
             </label>
@@ -237,7 +232,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
               type="button"
               onClick={() => setShowPassword((shown) => !shown)}
               aria-pressed={showPassword}
-              className="text-sm underline text-gray-600 hover:text-black min-h-11 -my-3 pl-4"
+              className="inline-flex items-center min-h-11 pl-4 text-sm underline text-gray-600 hover:text-black"
             >
               {showPassword ? "Hide passwords" : "Show passwords"}
             </button>
@@ -253,15 +248,15 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             autoCorrect="off"
             spellCheck={false}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={edit("password", setPassword)}
             aria-invalid={error?.field === "password"}
             aria-describedby={describedBy("password") ?? "password-hint"}
             className={inputClass}
           />
           {fieldError("password") ?? (
             <p id="password-hint" className="mt-2 text-sm text-gray-600">
-              At least {PASSWORD_MIN} characters. Pick one you&apos;ll remember:
-              there is no reset button in the app yet.
+              At least {PASSWORD_MIN} characters. If you forget it, email{" "}
+              {contactEmail} and we&apos;ll reset it.
             </p>
           )}
         </div>
@@ -280,7 +275,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             autoCorrect="off"
             spellCheck={false}
             value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
+            onChange={edit("confirm", setConfirm)}
             aria-invalid={error?.field === "confirm"}
             aria-describedby={describedBy("confirm")}
             className={inputClass}

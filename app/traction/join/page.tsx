@@ -13,10 +13,10 @@ export const metadata: Metadata = {
 
 export default function TractionJoinPage() {
   return (
-    <article className="max-w-md">
+    <article className="max-w-md mx-auto">
       <TractionJoinForm
         contactEmail={traction.contactEmail}
-        appStoreUrl={traction.appStoreUrl}
+        donePath={`${traction.joinPath}/done`}
       />
     </article>
   );
