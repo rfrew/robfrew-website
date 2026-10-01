@@ -1,9 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-
-/** sessionStorage key the join form writes before navigating here. */
-export const JOINED_KEY = "traction-joined";
+import { parseJoined, readJoinedRaw } from "@/lib/traction-join";
 
 interface Props {
   contactEmail: string;
@@ -12,29 +10,22 @@ interface Props {
 }
 
 const subscribe = () => () => {};
-const readJoined = () => {
-  try {
-    return sessionStorage.getItem(JOINED_KEY);
-  } catch {
-    return null;
-  }
-};
 
 export default function TractionJoinDone({ contactEmail, appStoreUrl, joinPath }: Props) {
-  // Read on the client only; the server render (and a visit without having
-  // just joined) gets null and shows the generic version.
-  const stored = useSyncExternalStore(subscribe, readJoined, () => null);
-  let joined: { agencyName?: string; email?: string } = {};
-  try {
-    joined = stored ? JSON.parse(stored) : {};
-  } catch {
-    // Unreadable entry: fall back to the generic version.
-  }
+  // undefined = not known yet (the server HTML, before React runs): show
+  // neither version of the first paragraph, so someone who just joined is
+  // never briefly told "not joined yet". null = this tab has not just joined.
+  const stored = useSyncExternalStore<string | null | undefined>(
+    subscribe,
+    readJoinedRaw,
+    () => undefined
+  );
+  const joined = parseJoined(stored ?? null);
 
   return (
-    <div role="status">
+    <div>
       <h1 className="text-3xl md:text-4xl font-bold mb-4">You&apos;re in</h1>
-      {joined.email ? (
+      {joined ? (
         <>
           <p className="text-lg leading-relaxed text-gray-700 mb-6">
             Your TrAction account
@@ -50,7 +41,7 @@ export default function TractionJoinDone({ contactEmail, appStoreUrl, joinPath }
             {joined.email}
           </p>
         </>
-      ) : (
+      ) : stored === undefined ? null : (
         <p className="text-lg leading-relaxed text-gray-700 mb-8">
           Your TrAction account is ready. Not joined yet?{" "}
           <a href={joinPath} className="underline hover:text-black">

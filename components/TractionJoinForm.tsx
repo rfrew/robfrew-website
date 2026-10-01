@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { JOINED_KEY } from "@/components/TractionJoinDone";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
+import { writeJoined } from "@/lib/traction-join";
 
 type Field = "fullName" | "email" | "code" | "password" | "confirm";
 
@@ -19,6 +20,11 @@ interface Props {
 }
 
 const PASSWORD_MIN = 8;
+// bcrypt (the server's password hash) reads at most 72 bytes.
+const PASSWORD_MAX_BYTES = 72;
+const FIELDS: readonly string[] = ["fullName", "email", "code", "password", "confirm"];
+
+const noSubscription = () => () => {};
 
 // scroll-mt keeps the field's label on screen when it is scrolled into view.
 const inputClass =
@@ -33,7 +39,29 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<{ field?: Field; message: string } | null>(null);
+  // Set if the browser has not left this page a few seconds after a
+  // successful join (the next page failed to load, or the user pressed stop).
+  const [stalled, setStalled] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  // False in the server HTML, true once React is running. Until then the
+  // submit button is disabled, so the browser can never submit the form
+  // natively (which would bypass every check here).
+  const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
+
+  // Coming back to this page with the Back button after joining restores it
+  // exactly as it was left: reset it, and never bring the passwords back.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setIsSubmitting(false);
+      setStalled(false);
+      setPassword("");
+      setConfirm("");
+      setShowPassword(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   // The office's link can carry the code after a "#" so agents don't type it.
   // A fragment never reaches the server, so the code stays out of access logs;
@@ -71,9 +99,11 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   // Show an error and bring its field into view (the submit button can be a
   // full screen below the field on a small phone).
   const fail = (failure: { field?: Field; message: string }) => {
-    setError(failure);
+    // Render the message first, so the field is already marked invalid (and
+    // described by the message) when it receives focus.
+    flushSync(() => setError(failure));
     if (!failure.field) return;
-    const input = formRef.current?.querySelector<HTMLInputElement>(`#${failure.field}`);
+    const input = document.getElementById(failure.field);
     input?.focus({ preventScroll: true });
     input?.scrollIntoView({ block: "start", behavior: "smooth" });
   };
@@ -97,41 +127,53 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
     if (password.length < PASSWORD_MIN) {
       return fail({ field: "password", message: `Use at least ${PASSWORD_MIN} characters.` });
     }
+    if (new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES) {
+      return fail({ field: "password", message: "That password is too long. Use a shorter one." });
+    }
     if (password !== confirm) {
       return fail({ field: "confirm", message: "The two passwords don't match." });
     }
 
     setIsSubmitting(true);
     setError(null);
+    let response: Response;
     try {
-      const response = await fetch("/api/traction/join", {
+      response = await fetch("/api/traction/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, email, code, password }),
       });
-      const result: JoinResponse = await response.json();
-      if (response.ok && result.ok) {
-        try {
-          sessionStorage.setItem(
-            JOINED_KEY,
-            JSON.stringify({ agencyName: result.agencyName, email: result.email ?? email })
-          );
-        } catch {
-          // Storage unavailable: the next page falls back to a generic message.
-        }
-        // A real page load after the submit (not an in-place swap) is what
-        // lets the browser offer to save the new password.
-        window.location.assign(donePath);
-        return;
-      }
-      setIsSubmitting(false);
-      fail({ field: result.field, message: result.message });
     } catch {
       setIsSubmitting(false);
       setError({
         message: `Couldn't reach the server. Check your connection and try again, or email ${contactEmail}.`,
       });
+      return;
     }
+
+    // A gateway error page is not JSON; treat anything unreadable as unknown.
+    const result: Partial<JoinResponse> | null = await response.json().catch(() => null);
+    if (response.ok && result?.ok) {
+      writeJoined({ agencyName: result.agencyName, email: result.email ?? email });
+      // A real page load after the submit (not an in-place swap) is what lets
+      // the browser offer to save the new password. The button stays disabled
+      // so a second tap cannot resubmit while the next page loads.
+      window.location.assign(donePath);
+      window.setTimeout(() => setStalled(true), 4000);
+      return;
+    }
+
+    setIsSubmitting(false);
+    if (!result?.message) {
+      setError({
+        message: `Something went wrong. Your account may have been created: try signing in to TrAction, or email ${contactEmail}.`,
+      });
+      return;
+    }
+    fail({
+      field: result.field && FIELDS.includes(result.field) ? result.field : undefined,
+      message: result.message,
+    });
   };
 
   const fieldError = (field: Field) =>
@@ -151,7 +193,13 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
         TrAction app with this email and password.
       </p>
 
-      <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-6">
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        method="post"
+        noValidate
+        className="space-y-6"
+      >
         <div>
           <label htmlFor="fullName" className="block text-sm font-semibold mb-2">
             Full name
@@ -289,13 +337,22 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Creating account..." : "Create account"}
-        </button>
+        {stalled ? (
+          <a
+            href={donePath}
+            className="block w-full text-center bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200"
+          >
+            Account created. Continue
+          </a>
+        ) : (
+          <button
+            type="submit"
+            disabled={isSubmitting || !hydrated}
+            className="w-full bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Creating account..." : "Create account"}
+          </button>
+        )}
       </form>
     </>
   );
