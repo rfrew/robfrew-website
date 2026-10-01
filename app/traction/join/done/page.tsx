@@ -5,7 +5,7 @@ import { traction } from "@/data/traction";
 // Where the join form lands after creating an account. A separate URL (not an
 // in-place swap) so the browser offers to save the password just chosen.
 export const metadata: Metadata = {
-  title: "You're in",
+  title: { absolute: "TrAction: you're in" },
   description: "Your TrAction account is ready.",
   robots: { index: false, follow: false },
 };

@@ -20,9 +20,9 @@ interface Props {
 
 const PASSWORD_MIN = 8;
 
-// scroll-mt clears the site's fixed header when a field is scrolled into view.
+// scroll-mt keeps the field's label on screen when it is scrolled into view.
 const inputClass =
-  "w-full px-4 py-3 text-base border border-gray-300 focus:border-black focus:outline-none transition-colors scroll-mt-32";
+  "w-full px-4 py-3 text-base border border-gray-300 focus:border-black focus:outline-none transition-colors scroll-mt-12";
 
 export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   const [fullName, setFullName] = useState("");

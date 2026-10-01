@@ -6,7 +6,7 @@ import { traction } from "@/data/traction";
 // sitemap, the nav and search results. Deliberately agency-neutral: the agency
 // is only named after a valid code is accepted.
 export const metadata: Metadata = {
-  title: "Join TrAction",
+  title: { absolute: "Join TrAction" },
   description: "Create your TrAction account with the code from your office.",
   robots: { index: false, follow: false },
 };
