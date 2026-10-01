@@ -44,7 +44,8 @@ export default function TractionPrivacyPage() {
         TrAction mobile application (&ldquo;the App&rdquo;). TrAction is a
         professional activity-tracking tool provided to real estate agents
         through their brokerage. Accounts are created by a brokerage
-        administrator; the App is not offered for general public
+        administrator, or by the agent using a join code issued by their
+        brokerage; the App is not offered for general public
         self-registration.
       </p>
 
@@ -54,7 +55,15 @@ export default function TractionPrivacyPage() {
           <strong>Account information.</strong> Your name, email address, and
           an account identifier (user ID), used to create and authenticate
           your account. Accounts are provisioned by your brokerage
-          administrator.
+          administrator, or created by you on our join page with a code from
+          your brokerage.
+        </li>
+        <li>
+          <strong>Join-page abuse protection.</strong> When someone submits
+          the join page, we record a hashed form of the network address the
+          request came from, solely to limit repeated guessing of join codes.
+          These records are short-lived: they are cleared as newer requests
+          arrive, normally within a day.
         </li>
         <li>
           <strong>Activity you log.</strong> The prospecting and business

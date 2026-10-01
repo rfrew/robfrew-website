@@ -5,7 +5,7 @@ import { traction } from "@/data/traction";
 export const metadata: Metadata = {
   title: "TrAction Support",
   description:
-    "Support for the TrAction mobile app: what it is, how to get help, and how accounts are provisioned.",
+    "Support for the TrAction mobile app: what it is, how to get help, and how accounts are created.",
 };
 
 export default function TractionSupportPage() {
@@ -41,11 +41,16 @@ export default function TractionSupportPage() {
 
       <h2 className="text-2xl font-semibold mt-10 mb-3">Accounts and sign-in</h2>
       <p className="text-lg leading-relaxed text-gray-700 mb-4">
-        TrAction accounts are provisioned by your brokerage administrator.
-        There is no self-signup in the app. If your office uses TrAction, sign
-        in with the account your admin or team lead created for you. If you do
-        not have an account yet, or you cannot sign in, contact your brokerage
-        administrator first; they can create your account or reset your access.
+        TrAction accounts belong to your brokerage. There is no self-signup
+        in the app. Your office either creates your account for you or sends
+        you a join link and an agency code; on the{" "}
+        <Link href={traction.joinPath} className="underline hover:text-black">
+          join page
+        </Link>{" "}
+        you enter that code and choose your own password, then sign in to the
+        app with the same email and password. If you do not have an account or
+        a code yet, ask your brokerage administrator. If you cannot sign in or
+        have forgotten your password, email the address above.
       </p>
 
       <h2 className="text-2xl font-semibold mt-10 mb-3">Your data</h2>
