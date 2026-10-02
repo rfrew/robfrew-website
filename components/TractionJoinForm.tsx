@@ -47,7 +47,6 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   // Set if the browser has not left this page a few seconds after a
   // successful join (the next page failed to load, or the user pressed stop).
   const [stalled, setStalled] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
   // True from a successful join until the browser leaves for the next page.
   const leavingAfterJoin = useRef(false);
   const stallTimer = useRef<number | undefined>(undefined);
@@ -56,8 +55,9 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   // natively (which would bypass every check here).
   const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
 
-  // Coming back to this page with the Back button after joining restores it
-  // exactly as it was left: reset it, and never bring the passwords back.
+  // Coming back to this page with the Back button can restore it exactly as
+  // it was left (the back/forward cache), whether or not a join happened:
+  // make it usable again, and never bring the passwords back.
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
       if (!e.persisted) return;
@@ -74,27 +74,8 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
       setConfirm("");
       setShowPassword(false);
     };
-    // Leaving for any other reason (reload, pull-to-refresh, another link)
-    // with a password typed in makes the browser offer to save a password for
-    // an account that was never created. Empty the fields first — directly in
-    // the DOM, since the page is going away before React would re-render. A
-    // real join is exempt so its save prompt still appears.
-    const onPageHide = () => {
-      if (leavingAfterJoin.current) return;
-      formRef.current
-        ?.querySelectorAll<HTMLInputElement>("#password, #confirm")
-        .forEach((input) => {
-          input.value = "";
-        });
-      setPassword("");
-      setConfirm("");
-    };
     window.addEventListener("pageshow", onPageShow);
-    window.addEventListener("pagehide", onPageHide);
-    return () => {
-      window.removeEventListener("pageshow", onPageShow);
-      window.removeEventListener("pagehide", onPageHide);
-    };
+    return () => window.removeEventListener("pageshow", onPageShow);
   }, []);
 
   // The office's link can carry the code after a "#" so agents don't type it.
@@ -241,7 +222,6 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
       </p>
 
       <form
-        ref={formRef}
         onSubmit={handleSubmit}
         method="post"
         noValidate

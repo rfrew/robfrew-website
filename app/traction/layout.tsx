@@ -2,8 +2,9 @@ import { traction } from "@/data/traction";
 
 // Shared frame for the TrAction public pages (privacy, support, join). Kept
 // deliberately plain: these are reference pages the app stores link to.
-// The bar's links are plain anchors (full page loads) on purpose: leaving the
-// join form must unload the page so its typed passwords are discarded.
+// The bar's links are plain anchors (full page loads), so Back to the join
+// form is either a fresh load or a back/forward-cache restore, which the
+// form's pageshow handler cleans up (passwords, submit state).
 export default function TractionLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
