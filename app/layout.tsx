@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SiteChrome from "@/components/SiteChrome";
 import StructuredData from "@/components/StructuredData";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -81,9 +82,9 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <body className={`${inter.variable} font-sans bg-white text-black antialiased`}>
-        <Header />
-        <main className="pt-20">{children}</main>
-        <Footer />
+        <SiteChrome header={<Header />} footer={<Footer />}>
+          {children}
+        </SiteChrome>
         <Analytics />
       </body>
     </html>

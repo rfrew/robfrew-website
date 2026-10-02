@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
+import {
+  clearJoinCode,
+  readJoinCode,
+  writeJoinCode,
+  writeJoined,
+} from "@/lib/traction-join";
 
 type Field = "fullName" | "email" | "code" | "password" | "confirm";
 
@@ -14,15 +21,21 @@ interface JoinResponse {
 
 interface Props {
   contactEmail: string;
-  appStoreUrl: string;
+  donePath: string;
 }
 
 const PASSWORD_MIN = 8;
+// bcrypt (the server's password hash) reads at most 72 bytes.
+const PASSWORD_MAX_BYTES = 72;
+const FIELDS: readonly string[] = ["fullName", "email", "code", "password", "confirm"];
 
+const noSubscription = () => () => {};
+
+// scroll-mt keeps the field's label on screen when it is scrolled into view.
 const inputClass =
-  "w-full px-4 py-3 text-base border border-gray-300 focus:border-black focus:outline-none transition-colors";
+  "w-full px-4 py-3 text-base border border-gray-300 focus:border-black focus:outline-none transition-colors scroll-mt-12";
 
-export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
+export default function TractionJoinForm({ contactEmail, donePath }: Props) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -31,113 +44,165 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<{ field?: Field; message: string } | null>(null);
-  const [joined, setJoined] = useState<{ agencyName?: string; email: string } | null>(null);
+  // Set if the browser has not left this page a few seconds after a
+  // successful join (the next page failed to load, or the user pressed stop).
+  const [stalled, setStalled] = useState(false);
+  // True from a successful join until the browser leaves for the next page.
+  const leavingAfterJoin = useRef(false);
+  const stallTimer = useRef<number | undefined>(undefined);
+  // False in the server HTML, true once React is running. Until then the
+  // submit button is disabled, so the browser can never submit the form
+  // natively (which would bypass every check here).
+  const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
+
+  // Coming back to this page with the Back button can restore it exactly as
+  // it was left (the back/forward cache), whether or not a join happened:
+  // make it usable again, and never bring the passwords back.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      // Timers are frozen with the page and resume here: stop the pending
+      // "stalled" switch from firing on a form that is usable again.
+      window.clearTimeout(stallTimer.current);
+      // Back after a completed join: the code has been used, so the next
+      // person on this device must open their own office's link.
+      if (leavingAfterJoin.current) setCode("");
+      leavingAfterJoin.current = false;
+      setIsSubmitting(false);
+      setStalled(false);
+      setPassword("");
+      setConfirm("");
+      setShowPassword(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   // The office's link can carry the code after a "#" so agents don't type it.
   // A fragment never reaches the server, so the code stays out of access logs;
-  // it is also removed from the address bar once read.
+  // it is also removed from the address bar once read, and remembered for this
+  // tab so a reload (or pull-to-refresh) does not lose it.
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (!hash) return;
-    let fromLink = hash;
-    try {
-      fromLink = decodeURIComponent(hash);
-    } catch {
-      // A link mangled in transit: use it as-is; the server rejects a bad code.
-    }
-    fromLink = fromLink.trim();
-    setCode(fromLink.slice(0, 64));
-    window.history.replaceState(null, "", window.location.pathname);
+    const readCode = () => {
+      const hash = window.location.hash.slice(1);
+      let fromLink = "";
+      if (hash) {
+        fromLink = hash;
+        try {
+          fromLink = decodeURIComponent(hash);
+        } catch {
+          // A link mangled in transit: use it as-is; the server rejects a bad code.
+        }
+        fromLink = fromLink.trim().slice(0, 64);
+        window.history.replaceState(null, "", window.location.pathname);
+        if (fromLink) writeJoinCode(fromLink);
+      } else {
+        fromLink = readJoinCode();
+      }
+      if (fromLink) setCode(fromLink);
+    };
+    readCode();
+    // A different join link opened in this same tab only changes the fragment.
+    window.addEventListener("hashchange", readCode);
+    return () => window.removeEventListener("hashchange", readCode);
   }, []);
+
+  // Editing a field clears its own error; either password field clears the
+  // mismatch message.
+  const edit = (field: Field, set: (value: string) => void) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      set(e.target.value);
+      setError((current) => {
+        if (!current) return current;
+        const passwords = field === "password" || field === "confirm";
+        if (current.field === field || (passwords && current.field === "confirm")) {
+          return null;
+        }
+        return current;
+      });
+    };
+
+  // Show an error and bring its field into view (the submit button can be a
+  // full screen below the field on a small phone).
+  const fail = (failure: { field?: Field; message: string }) => {
+    // Render the message first, so the field is already marked invalid (and
+    // described by the message) when it receives focus.
+    flushSync(() => setError(failure));
+    if (!failure.field) return;
+    const input = document.getElementById(failure.field);
+    input?.focus({ preventScroll: true });
+    input?.scrollIntoView({ block: "start", behavior: "smooth" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
 
+    // The form is noValidate so these messages appear inline, under the
+    // field, instead of in the browser's own bubble. The server checks again.
+    const nameLength = [...fullName.trim().replace(/\s+/g, " ")].length;
+    if (nameLength < 2 || nameLength > 60) {
+      return fail({ field: "fullName", message: "Enter your full name (2 to 60 characters)." });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return fail({ field: "email", message: "Enter a valid email address." });
+    }
+    if (!code.trim()) {
+      return fail({ field: "code", message: "Enter the agency code from your office." });
+    }
     if (password.length < PASSWORD_MIN) {
-      setError({ field: "password", message: `Use at least ${PASSWORD_MIN} characters.` });
-      return;
+      return fail({ field: "password", message: `Use at least ${PASSWORD_MIN} characters.` });
+    }
+    if (new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES) {
+      return fail({ field: "password", message: "That password is too long. Use a shorter one." });
     }
     if (password !== confirm) {
-      setError({ field: "confirm", message: "The two passwords don't match." });
-      return;
+      return fail({ field: "confirm", message: "The two passwords don't match." });
     }
 
     setIsSubmitting(true);
     setError(null);
+    let response: Response;
     try {
-      const response = await fetch("/api/traction/join", {
+      response = await fetch("/api/traction/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, email, code, password }),
       });
-      const result: JoinResponse = await response.json();
-      if (response.ok && result.ok) {
-        setPassword("");
-        setConfirm("");
-        setJoined({ agencyName: result.agencyName, email: result.email ?? email });
-        window.scrollTo(0, 0);
-      } else {
-        setError({ field: result.field, message: result.message });
-      }
     } catch {
+      setIsSubmitting(false);
       setError({
         message: `Couldn't reach the server. Check your connection and try again, or email ${contactEmail}.`,
       });
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
+
+    // A gateway error page is not JSON; treat anything unreadable as unknown.
+    const result: Partial<JoinResponse> | null = await response.json().catch(() => null);
+    if (response.ok && result?.ok) {
+      writeJoined({ agencyName: result.agencyName, email: result.email ?? email });
+      clearJoinCode();
+      // A real page load after the submit (not an in-place swap) is what lets
+      // the browser offer to save the new password. The button stays disabled
+      // so a second tap cannot resubmit while the next page loads.
+      leavingAfterJoin.current = true;
+      window.location.assign(donePath);
+      stallTimer.current = window.setTimeout(() => setStalled(true), 4000);
+      return;
+    }
+
+    setIsSubmitting(false);
+    if (!result?.message) {
+      setError({
+        message: `Something went wrong. Your account may have been created: try signing in to TrAction, or email ${contactEmail}.`,
+      });
+      return;
+    }
+    fail({
+      field: result.field && FIELDS.includes(result.field) ? result.field : undefined,
+      message: result.message,
+    });
   };
-
-  if (joined) {
-    return (
-      <div role="status">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">You&apos;re in</h1>
-        <p className="text-lg leading-relaxed text-gray-700 mb-6">
-          Your TrAction account
-          {joined.agencyName ? (
-            <>
-              {" "}
-              with <strong>{joined.agencyName}</strong>
-            </>
-          ) : null}{" "}
-          is ready. Your sign-in email is:
-        </p>
-        <p className="text-xl font-semibold break-all border border-gray-300 px-4 py-3 mb-8">
-          {joined.email}
-        </p>
-
-        <h2 className="text-xl font-semibold mb-3">Next steps</h2>
-        <ol className="list-decimal pl-6 space-y-2 text-lg text-gray-700 mb-6">
-          <li>Install TrAction on your iPhone.</li>
-          <li>Open TrAction.</li>
-          <li>Sign in with the email above and the password you just chose.</li>
-        </ol>
-        <a
-          href={appStoreUrl}
-          className="block w-full text-center bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200 mb-6"
-        >
-          Get TrAction on the App Store
-        </a>
-
-        <p className="text-gray-600 mb-3">
-          If your iPhone suggested a password, it&apos;s saved in Settings ›
-          Passwords.
-        </p>
-        <p className="text-gray-600 mb-3">
-          TrAction is iPhone-only for now. On Android? Your account is ready
-          for when the Android app arrives.
-        </p>
-        <p className="text-gray-600">
-          Wrong email, or stuck? Email{" "}
-          <a href={`mailto:${contactEmail}`} className="underline hover:text-black">
-            {contactEmail}
-          </a>
-          .
-        </p>
-      </div>
-    );
-  }
 
   const fieldError = (field: Field) =>
     error?.field === field ? (
@@ -156,7 +221,12 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
         TrAction app with this email and password.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        method="post"
+        noValidate
+        className="space-y-6"
+      >
         <div>
           <label htmlFor="fullName" className="block text-sm font-semibold mb-2">
             Full name
@@ -170,7 +240,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             maxLength={60}
             autoComplete="name"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            onChange={edit("fullName", setFullName)}
             aria-invalid={error?.field === "fullName"}
             aria-describedby={describedBy("fullName")}
             className={inputClass}
@@ -197,7 +267,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             autoCorrect="off"
             spellCheck={false}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={edit("email", setEmail)}
             aria-invalid={error?.field === "email"}
             aria-describedby={describedBy("email")}
             className={inputClass}
@@ -220,7 +290,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             autoCorrect="off"
             spellCheck={false}
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={edit("code", setCode)}
             aria-invalid={error?.field === "code"}
             aria-describedby={describedBy("code")}
             className={`${inputClass} uppercase tracking-wider`}
@@ -229,7 +299,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
         </div>
 
         <div>
-          <div className="flex items-baseline justify-between mb-2">
+          <div className="flex items-center justify-between">
             <label htmlFor="password" className="block text-sm font-semibold">
               Password
             </label>
@@ -237,7 +307,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
               type="button"
               onClick={() => setShowPassword((shown) => !shown)}
               aria-pressed={showPassword}
-              className="text-sm underline text-gray-600 hover:text-black min-h-11 -my-3 pl-4"
+              className="inline-flex items-center min-h-11 pl-4 text-sm underline text-gray-600 hover:text-black"
             >
               {showPassword ? "Hide passwords" : "Show passwords"}
             </button>
@@ -253,15 +323,15 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             autoCorrect="off"
             spellCheck={false}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={edit("password", setPassword)}
             aria-invalid={error?.field === "password"}
             aria-describedby={describedBy("password") ?? "password-hint"}
             className={inputClass}
           />
           {fieldError("password") ?? (
             <p id="password-hint" className="mt-2 text-sm text-gray-600">
-              At least {PASSWORD_MIN} characters. Pick one you&apos;ll remember:
-              there is no reset button in the app yet.
+              At least {PASSWORD_MIN} characters. If you forget it, email{" "}
+              {contactEmail} and we&apos;ll reset it.
             </p>
           )}
         </div>
@@ -280,7 +350,7 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
             autoCorrect="off"
             spellCheck={false}
             value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
+            onChange={edit("confirm", setConfirm)}
             aria-invalid={error?.field === "confirm"}
             aria-describedby={describedBy("confirm")}
             className={inputClass}
@@ -294,13 +364,22 @@ export default function TractionJoinForm({ contactEmail, appStoreUrl }: Props) {
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Creating account..." : "Create account"}
-        </button>
+        {stalled ? (
+          <a
+            href={donePath}
+            className="block w-full text-center bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200"
+          >
+            Account created. Continue
+          </a>
+        ) : (
+          <button
+            type="submit"
+            disabled={isSubmitting || !hydrated}
+            className="w-full bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Creating account..." : "Create account"}
+          </button>
+        )}
       </form>
     </>
   );

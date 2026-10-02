@@ -133,7 +133,7 @@ export async function POST(request: Request) {
       return invalid("password", `Use at least ${PASSWORD_MIN} characters.`);
     }
     if (Buffer.byteLength(password, "utf8") > PASSWORD_MAX_BYTES) {
-      return invalid("password", "That password is too long. Use 72 characters or fewer.");
+      return invalid("password", "That password is too long. Use a shorter one.");
     }
 
     const admin = getTractionAdmin();
