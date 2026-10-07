@@ -15,6 +15,12 @@ export const traction = {
   privacyPath: "/traction/privacy",
   supportPath: "/traction/support",
   joinPath: "/traction/join",
+  // Self-service password reset (spec 0014). The recovery email links to
+  // `${resetPath}/confirm`; that URL is written literally in the Supabase
+  // recovery template, so change both together.
+  resetPath: "/traction/reset",
+  // URL scheme registered by the app (app.json `scheme`), for "Open TrAction".
+  appScheme: "traction",
   // Account-deletion instructions (required by Google Play Data safety / Apple).
   deleteAccountPath: "/traction/delete-account",
   // Unlisted App Store listing: reachable by this link only, not by search.

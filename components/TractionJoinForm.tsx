@@ -8,6 +8,7 @@ import {
   writeJoinCode,
   writeJoined,
 } from "@/lib/traction-join";
+import { PASSWORD_MIN, passwordProblem } from "@/lib/traction-password";
 
 type Field = "fullName" | "email" | "code" | "password" | "confirm";
 
@@ -22,11 +23,8 @@ interface JoinResponse {
 interface Props {
   contactEmail: string;
   donePath: string;
+  resetPath: string;
 }
-
-const PASSWORD_MIN = 8;
-// bcrypt (the server's password hash) reads at most 72 bytes.
-const PASSWORD_MAX_BYTES = 72;
 const FIELDS: readonly string[] = ["fullName", "email", "code", "password", "confirm"];
 
 const noSubscription = () => () => {};
@@ -35,7 +33,7 @@ const noSubscription = () => () => {};
 const inputClass =
   "w-full px-4 py-3 text-base border border-gray-300 focus:border-black focus:outline-none transition-colors scroll-mt-12";
 
-export default function TractionJoinForm({ contactEmail, donePath }: Props) {
+export default function TractionJoinForm({ contactEmail, donePath, resetPath }: Props) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -150,12 +148,8 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
     if (!code.trim()) {
       return fail({ field: "code", message: "Enter the agency code from your office." });
     }
-    if (password.length < PASSWORD_MIN) {
-      return fail({ field: "password", message: `Use at least ${PASSWORD_MIN} characters.` });
-    }
-    if (new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES) {
-      return fail({ field: "password", message: "That password is too long. Use a shorter one." });
-    }
+    const passwordIssue = passwordProblem(password);
+    if (passwordIssue) return fail({ field: "password", message: passwordIssue });
     if (password !== confirm) {
       return fail({ field: "confirm", message: "The two passwords don't match." });
     }
@@ -330,8 +324,8 @@ export default function TractionJoinForm({ contactEmail, donePath }: Props) {
           />
           {fieldError("password") ?? (
             <p id="password-hint" className="mt-2 text-sm text-gray-600">
-              At least {PASSWORD_MIN} characters. If you forget it, email{" "}
-              {contactEmail} and we&apos;ll reset it.
+              At least {PASSWORD_MIN} characters. If you forget it, you can
+              reset it at robfrew.com{resetPath}.
             </p>
           )}
         </div>
