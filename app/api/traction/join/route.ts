@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { clientIp, ipThrottleKey, isRateLimited } from "@/lib/rate-limit";
 import { getTractionAdmin, isTractionConfigured } from "@/lib/traction-admin";
+import { passwordProblem } from "@/lib/traction-password";
 import { traction } from "@/data/traction";
 
 // Creates a TrAction account from the join page (realestate-app spec 0013,
@@ -31,9 +32,6 @@ interface JoinBody {
   email?: string;
 }
 
-const PASSWORD_MIN = 8;
-// bcrypt (Supabase Auth's hash) reads at most 72 bytes.
-const PASSWORD_MAX_BYTES = 72;
 
 function reply(status: number, body: JoinBody, headers?: Record<string, string>) {
   return NextResponse.json(body, {
@@ -129,12 +127,8 @@ export async function POST(request: Request) {
     }
 
     const password = typeof raw.password === "string" ? raw.password : "";
-    if (password.length < PASSWORD_MIN) {
-      return invalid("password", `Use at least ${PASSWORD_MIN} characters.`);
-    }
-    if (Buffer.byteLength(password, "utf8") > PASSWORD_MAX_BYTES) {
-      return invalid("password", "That password is too long. Use a shorter one.");
-    }
+    const passwordIssue = passwordProblem(password);
+    if (passwordIssue) return invalid("password", passwordIssue);
 
     const admin = getTractionAdmin();
 
@@ -174,7 +168,7 @@ export async function POST(request: Request) {
           ok: false,
           error: "account_exists",
           field: "email",
-          message: `An account with this email already exists. Open TrAction and sign in. Forgot your password? Email ${traction.contactEmail}.`,
+          message: `An account with this email already exists. Open TrAction and sign in. Forgot your password? Reset it at robfrew.com${traction.resetPath}.`,
         });
       }
       if (errorCode === "weak_password") {

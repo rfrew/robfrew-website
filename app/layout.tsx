@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SiteChrome from "@/components/SiteChrome";
 import StructuredData from "@/components/StructuredData";
-import { Analytics } from "@vercel/analytics/next";
+import SiteAnalytics from "@/components/SiteAnalytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -85,7 +85,7 @@ export default function RootLayout({
         <SiteChrome header={<Header />} footer={<Footer />}>
           {children}
         </SiteChrome>
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   );

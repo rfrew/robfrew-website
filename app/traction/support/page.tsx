@@ -49,8 +49,12 @@ export default function TractionSupportPage() {
         </Link>{" "}
         you enter that code and choose your own password, then sign in to the
         app with the same email and password. If you do not have an account or
-        a code yet, ask your brokerage administrator. If you cannot sign in or
-        have forgotten your password, email the address above.
+        a code yet, ask your brokerage administrator. If you have forgotten your
+        password,{" "}
+        <Link href={traction.resetPath} className="underline hover:text-black">
+          reset it here
+        </Link>
+        . If you still cannot sign in, email the address above.
       </p>
 
       <h2 className="text-2xl font-semibold mt-10 mb-3">Your data</h2>

@@ -17,6 +17,7 @@ export default function TractionJoinPage() {
       <TractionJoinForm
         contactEmail={traction.contactEmail}
         donePath={`${traction.joinPath}/done`}
+        resetPath={traction.resetPath}
       />
     </article>
   );
