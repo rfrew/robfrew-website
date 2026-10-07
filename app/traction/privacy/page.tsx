@@ -144,7 +144,11 @@ export default function TractionPrivacyPage() {
         administrator. Because accounts are administered by your brokerage,
         some requests may be fulfilled through them. We will delete your
         personal information on request, subject to any legal obligation to
-        retain it.
+        retain it. For step-by-step instructions, see{" "}
+        <Link href={traction.deleteAccountPath} className="underline hover:text-black">
+          how to delete your account
+        </Link>
+        .
       </p>
       <p className={p}>
         Depending on where you live, you may have additional rights over your
