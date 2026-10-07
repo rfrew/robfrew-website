@@ -24,8 +24,11 @@ interface Props {
 const noSubscription = () => () => {};
 
 // The token from the recovery link, read once per page load. Reset links are
-// always full page loads (they come from an email), so a module-level cache
-// is a stable snapshot for useSyncExternalStore; "" means the link had none.
+// always full page loads (they come from an email, and every link on these
+// pages is a plain <a>, never a client-side navigation), so a module-level
+// cache is a stable snapshot for useSyncExternalStore; "" means the link had
+// none. If a client-side route into this page is ever added, this must move
+// to per-mount state.
 let tokenFromLink: string | undefined;
 function readTokenFromLink(): string {
   if (tokenFromLink === undefined) {
@@ -60,7 +63,6 @@ export default function TractionResetConfirm({ contactEmail, requestPath, donePa
   const [linkSpent, setLinkSpent] = useState<string | null>(null);
   const [stalled, setStalled] = useState(false);
   const stallTimer = useRef<number | undefined>(undefined);
-  const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
 
   // Keep the token out of history, the address bar and any screenshot.
   useEffect(() => {
@@ -235,8 +237,8 @@ export default function TractionResetConfirm({ contactEmail, requestPath, donePa
           />
           {fieldError("password") ?? (
             <p id="password-hint" className="mt-2 text-sm text-gray-600">
-              At least {PASSWORD_MIN} characters. If your phone suggests one,
-              it saves it for you.
+              At least {PASSWORD_MIN} characters. Pick one you can type on
+              your phone; you&apos;ll enter it in the TrAction app.
             </p>
           )}
         </div>
@@ -279,7 +281,7 @@ export default function TractionResetConfirm({ contactEmail, requestPath, donePa
         ) : (
           <button
             type="submit"
-            disabled={isSubmitting || !hydrated}
+            disabled={isSubmitting}
             className="w-full bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Saving..." : "Set new password"}

@@ -85,12 +85,16 @@ export async function POST(request: Request) {
       return invalidLink();
     }
 
-    const { error: updateError } = await auth.auth.updateUser({ password });
-    // Whatever happened, end the recovery session (and, on success, every
-    // other session for this account).
-    const { error: signOutError } = await auth.auth.signOut({ scope: "global" });
-    if (signOutError) {
-      console.warn(`TrAction reset: signOut failed: ${signOutError.code ?? "unknown"}`);
+    // Whatever happens to the update, end the recovery session (and, on
+    // success, every other session for this account) before responding.
+    let updateError: { code?: string } | null = null;
+    try {
+      ({ error: updateError } = await auth.auth.updateUser({ password }));
+    } finally {
+      const { error: signOutError } = await auth.auth.signOut({ scope: "global" });
+      if (signOutError) {
+        console.warn(`TrAction reset: signOut failed: ${signOutError.code ?? "unknown"}`);
+      }
     }
 
     if (updateError) {

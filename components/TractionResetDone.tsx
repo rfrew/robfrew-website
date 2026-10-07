@@ -40,7 +40,7 @@ export default function TractionResetDone({ contactEmail, appStoreUrl, appScheme
       )}
 
       <a
-        href={`${appScheme}://`}
+        href={`${appScheme}://sign-in`}
         className="block w-full text-center bg-black text-white px-6 py-4 font-semibold hover:bg-gray-900 transition-colors duration-200 mb-4"
       >
         Open TrAction
@@ -59,8 +59,9 @@ export default function TractionResetDone({ contactEmail, appStoreUrl, appScheme
         logged while offline is kept and syncs after you sign in.
       </p>
       <p className="text-gray-600 mb-3">
-        If your phone suggested the password, it&apos;s saved in Settings ›
-        Passwords.
+        If your iPhone offered to save this password, it&apos;s in Settings ›
+        Passwords, under robfrew.com. In TrAction, tap the key icon above the
+        keyboard and search for robfrew.com to use it.
       </p>
       <p className="text-gray-600">
         Stuck? Email{" "}

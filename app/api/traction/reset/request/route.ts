@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { clientIp, ipThrottleKey, isRateLimited } from "@/lib/rate-limit";
 import { createTractionAuthClient, isTractionAuthConfigured } from "@/lib/traction-auth";
+import { traction } from "@/data/traction";
 
 // Step 1 of the TrAction password reset (realestate-app spec 0014, decision
 // 0027): ask Supabase Auth to email a recovery link. The email template (set
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
       return reply(503, {
         ok: false,
         error: "not_configured",
-        message: "Password reset is temporarily unavailable.",
+        message: `Password reset is temporarily unavailable. Email ${traction.contactEmail} and we'll reset it for you.`,
       });
     }
 
