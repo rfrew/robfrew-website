@@ -60,8 +60,12 @@ export default function TractionSupportPage() {
         <Link href={traction.privacyPath} className="underline hover:text-black">
           TrAction Privacy Policy
         </Link>
-        . To request access to, correction of, or deletion of your data, email
-        the address above or ask your brokerage administrator.
+        . To request access to or correction of your data, email the address
+        above or ask your brokerage administrator. To delete your account, see{" "}
+        <Link href={traction.deleteAccountPath} className="underline hover:text-black">
+          how to delete your account
+        </Link>
+        .
       </p>
     </article>
   );

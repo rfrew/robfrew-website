@@ -15,6 +15,8 @@ export const traction = {
   privacyPath: "/traction/privacy",
   supportPath: "/traction/support",
   joinPath: "/traction/join",
+  // Account-deletion instructions (required by Google Play Data safety / Apple).
+  deleteAccountPath: "/traction/delete-account",
   // Unlisted App Store listing: reachable by this link only, not by search.
   appStoreUrl: "https://apps.apple.com/app/id6789017202",
 } as const;
