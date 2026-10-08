@@ -9,6 +9,7 @@
 // The legal entity is currently "Rob Frew" (matches the App Store Connect
 // copyright line). When the partnership entity exists, change `legalEntity`
 // here AND the ASC copyright line together.
+// Mirror of traction-site data/site.ts `domain`; change both on a domain move.
 const siteUrl = "https://tractionforagents.com";
 
 export const traction = {

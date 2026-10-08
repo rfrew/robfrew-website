@@ -4,7 +4,7 @@ import { useState, useSyncExternalStore } from "react";
 
 interface Props {
   contactEmail: string;
-  supportPath: string;
+  supportUrl: string;
 }
 
 interface RequestResponse {
@@ -20,7 +20,7 @@ const inputClass =
 // Step 1 of the TrAction password reset: ask for the account email and
 // request a recovery link. The confirmation is the same sentence whether or
 // not the address has an account (realestate-app spec 0014).
-export default function TractionResetRequest({ contactEmail, supportPath }: Props) {
+export default function TractionResetRequest({ contactEmail, supportUrl }: Props) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -146,7 +146,7 @@ export default function TractionResetRequest({ contactEmail, supportPath }: Prop
 
       <p className="mt-8 text-gray-600">
         Remembered it? Open TrAction and sign in. Need help?{" "}
-        <a href={supportPath} className="underline hover:text-black">
+        <a href={supportUrl} className="underline hover:text-black">
           Support
         </a>
         .

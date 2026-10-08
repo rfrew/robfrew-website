@@ -10,7 +10,9 @@ const nextConfig: NextConfig = {
     // These redirects are PERMANENT and must NEVER be removed: the App Store
     // and Google Play listings, Play Data safety, and emails already sent all
     // point at the old URLs. 308 keeps the path, the full query string and
-    // (in the browser) the URL fragment, in one hop. Phase 2b will widen this
+    // (in the browser) the URL fragment, in one hop for the published URLs
+    // (no trailing slash; Next's own slash-stripping adds a hop otherwise).
+    // Phase 2b will widen this
     // to /traction/:path* and /api/traction/:path* once join and reset move.
     return [
       { source: "/traction", destination: `${traction.siteUrl}/support`, permanent: true },
