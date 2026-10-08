@@ -1,6 +1,6 @@
 import { traction } from "@/data/traction";
 
-// Shared frame for the TrAction public pages (privacy, support, join). Kept
+// Shared frame for the TrAction account pages (join, reset). Kept
 // deliberately plain: these are reference pages the app stores link to.
 // The bar's links are plain anchors (full page loads), so Back to the join
 // form is either a fresh load or a back/forward-cache restore, which the
@@ -15,13 +15,13 @@ export default function TractionLayout({
           <span className="text-base font-bold">{traction.name}</span>
           <nav aria-label="TrAction pages" className="flex gap-x-6">
             <a
-              href={traction.supportPath}
+              href={traction.supportUrl}
               className="text-gray-600 hover:text-black underline-offset-4 hover:underline"
             >
               Support
             </a>
             <a
-              href={traction.privacyPath}
+              href={traction.privacyUrl}
               className="text-gray-600 hover:text-black underline-offset-4 hover:underline"
             >
               Privacy Policy

@@ -1,19 +1,25 @@
 // TrAction (the real-estate activity-tracking app) — shared facts for the
-// public privacy-policy and support pages that both app stores link to, and
-// the join page where agents create their account.
+// join and reset pages that still live on this site, and the product site
+// they are moving to (realestate-app spec 0015, decision 0028).
+//
+// Phase 2a (2026-10-08): the privacy, support and delete-account pages moved
+// to the product site; /traction/{privacy,support,delete-account} redirect
+// there permanently (next.config.ts). Phase 2b moves join and reset too.
 //
 // The legal entity is currently "Rob Frew" (matches the App Store Connect
 // copyright line). When the partnership entity exists, change `legalEntity`
 // here AND the ASC copyright line together.
+const siteUrl = "https://tractionforagents.com";
+
 export const traction = {
   name: "TrAction",
   legalEntity: "Rob Frew",
   contactEmail: "traction@robfrew.com",
-  // The date the policy was first published at this URL.
-  effectiveDate: "September 2, 2026",
-  effectiveDateISO: "2026-09-02",
-  privacyPath: "/traction/privacy",
-  supportPath: "/traction/support",
+  // The TrAction product site. Redirect targets and the frame's nav links.
+  siteUrl,
+  privacyUrl: `${siteUrl}/privacy`,
+  supportUrl: `${siteUrl}/support`,
+  deleteAccountUrl: `${siteUrl}/delete-account`,
   joinPath: "/traction/join",
   // Self-service password reset (spec 0014). The recovery email links to
   // `${resetPath}/confirm`; that URL is written literally in the Supabase
@@ -21,8 +27,6 @@ export const traction = {
   resetPath: "/traction/reset",
   // URL scheme registered by the app (app.json `scheme`), for "Open TrAction".
   appScheme: "traction",
-  // Account-deletion instructions (required by Google Play Data safety / Apple).
-  deleteAccountPath: "/traction/delete-account",
   // Unlisted App Store listing: reachable by this link only, not by search.
   appStoreUrl: "https://apps.apple.com/app/id6789017202",
 } as const;
