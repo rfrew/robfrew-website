@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Turnstile, { type TurnstileHandle } from "./Turnstile";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+
+/** How long submit will wait for Turnstile to hand over a token. */
+const TOKEN_WAIT_MS = 8_000;
 
 interface FormData {
   name: string;
@@ -20,6 +26,32 @@ export default function ContactForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  // A server-supplied message (e.g. "Please try again.") shown instead of the
+  // generic failure banner when the request was rejected as retryable.
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Bot defences. None of these are visible to a real visitor:
+  // - honeypot: an off-screen "website" field only bots fill in
+  // - renderedAt: when the form appeared, so instant submits can be dropped
+  // - turnstile token: Cloudflare's proof this is a browser, not a script
+  const [honeypot, setHoneypot] = useState("");
+  const renderedAtRef = useRef<number | null>(null);
+  const tokenRef = useRef<string | null>(null);
+  const turnstileRef = useRef<TurnstileHandle>(null);
+
+  useEffect(() => {
+    // Set on the client after mount so server and client markup match.
+    renderedAtRef.current = Date.now();
+  }, []);
+
+  /** Resolves with the Turnstile token, waiting briefly if it's still loading. */
+  const waitForToken = async (): Promise<string | null> => {
+    const deadline = Date.now() + TOKEN_WAIT_MS;
+    while (tokenRef.current === null && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+    return tokenRef.current;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -32,12 +64,19 @@ export default function ContactForm() {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus("idle");
+    setErrorMessage(null);
 
     try {
+      const turnstileToken = await waitForToken();
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          website: honeypot,
+          renderedAt: renderedAtRef.current,
+          turnstileToken,
+        }),
       });
 
       if (response.ok) {
@@ -50,17 +89,25 @@ export default function ContactForm() {
           message: "",
         });
       } else {
+        if (response.status === 400) {
+          const body = (await response.json().catch(() => null)) as
+            | { error?: unknown }
+            | null;
+          if (typeof body?.error === "string") setErrorMessage(body.error);
+        }
         setSubmitStatus("error");
       }
     } catch {
       setSubmitStatus("error");
     } finally {
+      // Tokens are single-use: get a fresh one for any further attempt.
+      turnstileRef.current?.reset();
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
       {/* Name */}
       <div>
         <label htmlFor="name" className="block text-sm font-semibold mb-2">
@@ -144,6 +191,35 @@ export default function ContactForm() {
         />
       </div>
 
+      {/* Honeypot — off-screen, out of the tab order, hidden from assistive
+          tech. Real visitors never reach it; bots that auto-fill every input
+          do, and the server silently drops those submissions. Not
+          display:none, which many bots skip. */}
+      <div
+        aria-hidden="true"
+        className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden"
+      >
+        <label htmlFor="website">Website</label>
+        <input
+          type="text"
+          id="website"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+        />
+      </div>
+
+      {/* Cloudflare Turnstile — managed mode, only interactive if needed */}
+      <Turnstile
+        ref={turnstileRef}
+        siteKey={TURNSTILE_SITE_KEY}
+        onToken={(token) => {
+          tokenRef.current = token;
+        }}
+      />
+
       {/* Submit Button */}
       <button
         type="submit"
@@ -167,10 +243,14 @@ export default function ContactForm() {
           role="alert"
           className="p-4 bg-red-50 border border-red-200 text-red-800"
         >
-          Oops! Something went wrong. Please try emailing me directly at{" "}
-          <a href="mailto:rob@robfrew.com" className="underline">
-            rob@robfrew.com
-          </a>
+          {errorMessage ?? (
+            <>
+              Oops! Something went wrong. Please try emailing me directly at{" "}
+              <a href="mailto:rob@robfrew.com" className="underline">
+                rob@robfrew.com
+              </a>
+            </>
+          )}
         </div>
       )}
     </form>
