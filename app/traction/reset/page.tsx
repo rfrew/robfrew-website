@@ -15,7 +15,7 @@ export default function TractionResetPage() {
     <article className="max-w-md mx-auto">
       <TractionResetRequest
         contactEmail={traction.contactEmail}
-        supportPath={traction.supportPath}
+        supportUrl={traction.supportUrl}
       />
     </article>
   );

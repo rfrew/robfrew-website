@@ -48,25 +48,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     },
-    // TrAction app pages (linked from the App Store / Google Play listings)
-    {
-      url: `${baseUrl}/traction/privacy`,
-      lastModified: new Date(),
-      changeFrequency: "yearly" as const,
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/traction/support`,
-      lastModified: new Date(),
-      changeFrequency: "yearly" as const,
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/traction/delete-account`,
-      lastModified: new Date(),
-      changeFrequency: "yearly" as const,
-      priority: 0.5,
-    },
+    // The TrAction pages moved to tractionforagents.com (Phase 2a); the old
+    // URLs redirect permanently and are no longer listed here.
   ];
 
   // Dynamic project pages
