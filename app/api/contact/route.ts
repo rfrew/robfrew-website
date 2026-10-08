@@ -1,21 +1,43 @@
 import { NextResponse } from "next/server";
 import { clientIp, isRateLimited } from "@/lib/rate-limit";
+import { turnstileConfigured, verifyTurnstile } from "@/lib/turnstile";
 
 // Delivers contact-form submissions via Resend (https://resend.com).
-// Requires two env vars (set in .env.local and Vercel):
-//   RESEND_API_KEY    — from the Resend dashboard
-//   CONTACT_TO_EMAIL  — where submissions land
+// Requires these env vars (set in .env.local and Vercel):
+//   RESEND_API_KEY        — from the Resend dashboard
+//   CONTACT_TO_EMAIL      — where submissions land
+//   TURNSTILE_SECRET_KEY  — Cloudflare Turnstile secret (see lib/turnstile.ts)
 // The default from address uses updates.robfrew.com, the domain verified for
 // sending in the Resend dashboard; override with CONTACT_FROM_EMAIL if that
 // ever changes. The sender domain must stay verified in Resend or sends 403.
+//
+// Bot defences, in order: Turnstile (hard 400 so a real person can retry),
+// then honeypot, submit-timing and no-spaces checks. Those three return the
+// same { success: true } body as a real send without emailing anything, so a
+// bot never learns which rule it tripped. Each drop logs its reason only —
+// never the visitor's email or message.
 
 const MAX_LENGTHS: Record<string, number> = {
   name: 100,
-  email: 200,
+  email: 254,
   company: 150,
   role: 150,
   message: 5000,
 };
+
+/** Minimum time between the form rendering and a believable human submit. */
+const MIN_SUBMIT_MS = 3_000;
+
+type BlockReason = "honeypot" | "too_fast" | "turnstile_failed" | "no_spaces";
+
+function logBlocked(reason: BlockReason) {
+  console.warn(`contact form blocked: ${reason}`);
+}
+
+/** Identical to the real success response so silent drops are indistinguishable. */
+function fakeSuccess() {
+  return NextResponse.json({ success: true });
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -27,7 +49,8 @@ function escapeHtml(value: string): string {
 
 export async function POST(request: Request) {
   try {
-    if (isRateLimited(`contact:${clientIp(request)}`, 5, 60_000)) {
+    const ip = clientIp(request);
+    if (isRateLimited(`contact:${ip}`, 5, 60_000)) {
       return NextResponse.json(
         { error: "Too many messages — please wait a minute and try again." },
         { status: 429 }
@@ -36,6 +59,35 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     const { name, email, company, role, message } = data;
+
+    // 1. Turnstile — verified before anything else is looked at.
+    if (!turnstileConfigured()) {
+      console.error("Contact form not configured: missing TURNSTILE_SECRET_KEY");
+      return NextResponse.json(
+        { error: "The contact form is temporarily unavailable." },
+        { status: 503 }
+      );
+    }
+    if (!(await verifyTurnstile(data.turnstileToken, ip))) {
+      logBlocked("turnstile_failed");
+      return NextResponse.json(
+        { error: "Please try again." },
+        { status: 400 }
+      );
+    }
+
+    // 2. Honeypot — real visitors never see or fill this field.
+    if (typeof data.website === "string" && data.website.trim() !== "") {
+      logBlocked("honeypot");
+      return fakeSuccess();
+    }
+
+    // 3. Timing — humans take longer than a few seconds to fill five fields.
+    const renderedAt = Number(data.renderedAt);
+    if (!Number.isFinite(renderedAt) || Date.now() - renderedAt < MIN_SUBMIT_MS) {
+      logBlocked("too_fast");
+      return fakeSuccess();
+    }
 
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -59,6 +111,14 @@ export async function POST(request: Request) {
         { error: "Please enter a valid email address." },
         { status: 400 }
       );
+    }
+
+    // 4. Content — a message with no whitespace at all is keyboard mashing,
+    // not a sentence. Deliberately no rules about how names look.
+    const trimmedMessage = String(message).trim();
+    if (trimmedMessage.length > 12 && !/\s/.test(trimmedMessage)) {
+      logBlocked("no_spaces");
+      return fakeSuccess();
     }
 
     const apiKey = process.env.RESEND_API_KEY;
